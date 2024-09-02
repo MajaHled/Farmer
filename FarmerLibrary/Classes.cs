@@ -84,7 +84,18 @@
 
         public int GetOwnedAmount(IBuyable product)
         {
-            return OwnedAmounts[product.GetType()];
+            if (OwnedAmounts.ContainsKey(product.GetType()))
+                return OwnedAmounts[product.GetType()];
+            return 0;
+        }
+
+        public void PlantSeedToCurrent(Seed seed)
+        {
+            if (GetOwnedAmount(seed) == 0)
+                return;
+
+            CurrentFarm.PlantASeed(seed);
+            OwnedAmounts[seed.GetType()] -= 1;
         }
 
         public Tool? CurrentTool { get; set; } = null;

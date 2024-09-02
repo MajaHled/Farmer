@@ -5,20 +5,25 @@ namespace FarmerGraphics
 {
     public partial class Farmer : Form
     {
+        double AspectRatio { get; init; }
         public Farmer()
         {
             InitializeComponent();
+
+            AspectRatio = Height / Width;
+
             //TODO double buffered panel, maybe do it in a nice way (subclass)
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null, panel1, new object[] { true });
             panel1.Width = 960;
             panel1.Height = 540;
             panel1.BackColor = Color.Red;
+
             gameState = GameState.GetClassicStartingState();
-            gameSceneHandler = new FarmerSceneHandler(gameState);
+            gameSceneHandler = new FarmerLibrary.FarmerGraphics(gameState);
         }
 
         private GameState gameState;
-        private FarmerSceneHandler gameSceneHandler;
+        private FarmerLibrary.FarmerGraphics gameSceneHandler;
 
         private void Form1_Load(object sender, EventArgs e) { }
 
@@ -36,6 +41,18 @@ namespace FarmerGraphics
         private void panel1_MouseMove(object sender, MouseEventArgs e)
         {
             gameSceneHandler.HandleMouseMove(e.X, e.Y);
+            Refresh();
+        }
+
+        private void Farmer_Resize(object sender, EventArgs e)
+        {
+            // TODO keep aspect ratio
+        }
+
+        private void panel1_Resize(object sender, EventArgs e)
+        {
+            gameSceneHandler.width = panel1.Width;
+            gameSceneHandler.height = panel1.Height;
             Refresh();
         }
     }

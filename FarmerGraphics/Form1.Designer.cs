@@ -33,14 +33,15 @@
             // 
             // panel1
             // 
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel1.Location = new Point(-3, 0);
-            panel1.MaximumSize = new Size(960, 540);
             panel1.Name = "panel1";
             panel1.Size = new Size(960, 540);
             panel1.TabIndex = 0;
             panel1.Paint += panel1_Paint;
             panel1.MouseClick += panel1_MouseClick;
             panel1.MouseMove += panel1_MouseMove;
+            panel1.Resize += panel1_Resize;
             // 
             // Farmer
             // 
@@ -48,11 +49,11 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(956, 538);
             Controls.Add(panel1);
-            MaximumSize = new Size(974, 585);
             MinimumSize = new Size(974, 585);
             Name = "Farmer";
             Text = "Form1";
             Load += Form1_Load;
+            Resize += Farmer_Resize;
             ResumeLayout(false);
         }
 
