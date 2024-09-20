@@ -110,7 +110,8 @@ namespace FarmerLibrary
     public interface IClickable
     {
         public void Click(double x, double y, GameState state);
-        public void DrawSelf(Graphics g, int width, int height);
+        public void Hover(double x, double y, GameState state);
+        public void DrawSelf(Graphics g, int width, int height, GameState state);
         public void Disable();
         public void Enable();
         public bool Enabled { get; }
@@ -120,6 +121,8 @@ namespace FarmerLibrary
     {
         protected Bitmap Icon;
         protected ProportionalRectangle? Position;
+        public List<IClickable> ToEnable { get; init; }
+        public List<IClickable> ToDisable { get; init; }
 
         public bool Enabled { get; private set; }
 
@@ -128,6 +131,8 @@ namespace FarmerLibrary
             Icon = icon;
             Position = position;
             Enabled = true;
+            ToEnable = [];
+            ToDisable = [];
         }
 
         public GameButton(Bitmap icon)
@@ -135,6 +140,8 @@ namespace FarmerLibrary
             Icon = icon;
             Position = null;
             Enabled = true;
+            ToEnable = [];
+            ToDisable = [];
         }
 
         public void SetPosition(ProportionalRectangle position) => Position = position;
@@ -145,7 +152,7 @@ namespace FarmerLibrary
 
         public void Enable() => Enabled = true; 
 
-        public void DrawSelf(Graphics g, int width, int height)
+        public void DrawSelf(Graphics g, int width, int height, GameState state)
         {
             if (Position is null)
                 throw new InvalidOperationException("Cannot draw button with uninitialized position.");
@@ -158,11 +165,25 @@ namespace FarmerLibrary
         {
             if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
             {
+                foreach (IClickable c in ToEnable)
+                {
+                    c.Enable();
+                }
+                foreach (IClickable c in ToDisable)
+                {
+                    c.Disable(); 
+                }
+
                 Action(state);
             }
         }
 
         protected abstract void Action(GameState state);
+
+        public void Hover(double x, double y, GameState state)
+        {
+            // TODO button hover behavior
+        }
     }
 
     public sealed class PlantMenuButton : GameButton
@@ -186,10 +207,10 @@ namespace FarmerLibrary
         }
     }
 
-    public sealed class HarvestHouseButton : GameButton
+    public sealed class HarvestButton : GameButton
     {
-        public HarvestHouseButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
-        public HarvestHouseButton(Bitmap icon) : base(icon) { }
+        public HarvestButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
+        public HarvestButton(Bitmap icon) : base(icon) { }
 
 
         protected override void Action(GameState state)
@@ -198,18 +219,17 @@ namespace FarmerLibrary
         }
     }
 
-    public sealed class ArrowButton : GameButton
+    public sealed class SceneSwitchButton : GameButton
     {
-        private View Destination;
-        public ArrowButton(Bitmap icon, ProportionalRectangle position, View destination) : base(icon, position)
+        private readonly View Destination;
+        public SceneSwitchButton(Bitmap icon, ProportionalRectangle position, View destination) : base(icon, position)
         {
             Destination = destination;
         }
-        public ArrowButton(Bitmap icon, View destination) : base(icon)
+        public SceneSwitchButton(Bitmap icon, View destination) : base(icon)
         {
             Destination = destination;
         }
-
 
         protected override void Action(GameState state)
         {
@@ -256,7 +276,6 @@ namespace FarmerLibrary
         }
     }
 
-
     public abstract class BuyButton : GameButton
     {
         private IBuyable Product;
@@ -269,7 +288,6 @@ namespace FarmerLibrary
             Product = product;
         }
 
-
         protected override void Action(GameState state)
         {
             throw new NotImplementedException();
@@ -280,9 +298,9 @@ namespace FarmerLibrary
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MenuHandler : IClickable
     {
-        private List<GameButton> Buttons = [];
+        public List<GameButton> Buttons { get; init; } // TODO Maybe like intexer, dont want it modified form outside maybe
         private Bitmap Background;
-        public ProportionalRectangle BackgroundPosition { get; init; }
+        public ProportionalRectangle BackgroundPosition { get; init; } 
 
         public bool Enabled { get; private set; }
 
@@ -291,6 +309,7 @@ namespace FarmerLibrary
             Background = background;
             BackgroundPosition = backgroundPosition;
             Enabled = true;
+            Buttons = [];
         }
 
         public void Add(GameButton button)
@@ -341,14 +360,20 @@ namespace FarmerLibrary
                 button.Click(x, y, state);
         }
 
-        public void DrawSelf(Graphics g, int width, int height)
+        public void Hover(double x, double y, GameState state)
+        {
+            foreach (GameButton button in Buttons)
+                button.Hover(x, y, state);
+        }
+
+        public void DrawSelf(Graphics g, int width, int height, GameState state)
         {
             if (!Enabled)
                 return;
 
             g.DrawImage(Background, BackgroundPosition.GetAbsolute(width, height));
             foreach (GameButton button in Buttons)
-                button.DrawSelf(g, width, height);
+                button.DrawSelf(g, width, height, state);
 
         }
 
@@ -366,6 +391,146 @@ namespace FarmerLibrary
                 button.Enable();
         }
     }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class FarmDisplay : IClickable
+    {
+        private ProportionalRectangle[,] plotCoords;
+        private NamedAssetsLoader NamedAssets = new();
+        private PlantStatesLoader PlantStates;
+
+        public FarmDisplay(PlantStatesLoader plantStates)
+        {
+            Enabled = true;
+            PlantStates = plantStates;
+
+
+            // Named assets
+            NamedAssets.Load("Worm", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Worm.png");
+            NamedAssets.Load("Dead", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Dead.png");
+
+            NamedAssets.Load("Plot-watered", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-watered-center.png");
+            NamedAssets.Load("Plot-highlighted", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-highlighted-center.png");
+            NamedAssets.Load("Plot-both", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-both.png");
+            NamedAssets.Load("Plots-default", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plots-default.png");
+
+
+            // Initialize plots:
+            plotCoords = new ProportionalRectangle[3, 4]; //TODO hardcoded constants
+            double[] XBounds = [0.21, 0.39, 0.58, 0.77, 0.96];
+            double[] YBounds = [0.07, 0.31, 0.57, 0.81];
+            for (int i = 0; i < plotCoords.GetLength(0); i++)
+            {
+                for (int j = 0; j < plotCoords.GetLength(1); j++)
+                {
+                    plotCoords[i, j] = new ProportionalRectangle(XBounds[j], XBounds[j + 1], YBounds[i], YBounds[i + 1]);
+                }
+            }
+        }
+
+        public bool Enabled { get; private set; }
+
+        public void Click(double x, double y, GameState state)
+        {
+            if (!Enabled)
+                return;
+
+            // See if inside a plot
+            for (int i = 0; i < state.CurrentFarm.Rows; i++)
+            {
+                for (int j = 0; j < state.CurrentFarm.Cols; j++)
+                {
+                    if (plotCoords[i, j].InArea(x, y))
+                    {
+                        if (state.CurrentTool is Tool t && state.HeldProduct is null)
+                            t.Use(state, state.CurrentFarm[i, j]);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void Hover(double x, double y, GameState state)
+        {
+            state.CurrentFarm.Unhighlight();
+
+            if (!Enabled)
+                return;
+
+            // See if inside a plot
+            for (int i = 0; i < state.CurrentFarm.Rows; i++)
+            {
+                for (int j = 0; j < state.CurrentFarm.Cols; j++)
+                {
+                    if (plotCoords[i, j].InArea(x, y))
+                    {
+                        state.CurrentFarm.Highlight(i, j);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void DrawSelf(Graphics g, int width, int height, GameState state)
+        {
+            g.DrawImage(NamedAssets["Plots-default"], 0, 0, width, height);
+
+            for (int i = 0; i < state.CurrentFarm.Rows; i++)
+            {
+                for (int j = 0; j < state.CurrentFarm.Cols; j++)
+                {
+                    bool watered = state.CurrentFarm[i, j].Watered;
+                    bool highlighted = state.CurrentFarm[i, j] == state.CurrentFarm.Highlighted;
+                    Rectangle position = plotCoords[i, j].GetAbsolute(width, height);
+
+                    // Draw plot highlights and watered color
+                    if (watered && highlighted)
+                    {
+                        g.DrawImage(NamedAssets["Plot-both"], position);
+                    }
+                    else if (watered)
+                    {
+                        g.DrawImage(NamedAssets["Plot-watered"], position);
+                    }
+                    else if (highlighted)
+                    {
+                        g.DrawImage(NamedAssets["Plot-highlighted"], position);
+                    }
+
+                    Type? plantType = state.CurrentFarm[i, j].PlantType;
+                    GrowthState? growthState = state.CurrentFarm[i, j].State;
+                    bool? alive = state.CurrentFarm[i, j].Alive;
+
+                    // Draw plant
+                    if (plantType is Type t && growthState is GrowthState s)
+                    {
+                        if (alive == true)
+                        {
+                            g.DrawImage(PlantStates.GetImage(t, s), position);
+                            if (state.CurrentFarm[i, j].HasBug)
+                            {
+                                g.DrawImage(NamedAssets["Worm"], position);
+                            }
+                        }
+                        else
+                        {
+                            g.DrawImage(NamedAssets["Dead"], position);
+                        }
+                    }
+                }
+            }
+        }
+        public void Disable()
+        {
+            Enabled = false;
+        }
+
+        public void Enable()
+        {
+            Enabled = true;
+        }
+    }
+
     #endregion
 
     public class CursorHandler
@@ -393,7 +558,13 @@ namespace FarmerLibrary
                 clickable.Click(X, Y, state);
             }
         }
-        public virtual void HandleMouseMove(double X, double Y, GameState state) { }
+        public virtual void HandleMouseMove(double X, double Y, GameState state)
+        {
+            foreach (IClickable clickable in Clickables)
+            {
+                clickable.Hover(X, Y, state);
+            }
+        }
     }
 
     public class MainSceneHandler : SceneHandler
@@ -407,7 +578,7 @@ namespace FarmerLibrary
             NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farmer-even.png");
 
             // Initialize farm interaction areas
-            // TODO remake as clickables, add hover handling to clickables, which may do nothing by default
+            // TODO remake as clickables
             farmCoords = new List<ProportionalRectangle>();
             double[] XBounds = { 0.02, 0.45, 0.54, 0.98 };
             double[] YBounds = { 0.37, 0.66, 0.70, 0.98 };
@@ -453,68 +624,60 @@ namespace FarmerLibrary
     {
         // Loaders
         private NamedAssetsLoader NamedAssets = new();
-        private ToolIconLoader toolIconLoader;
-        private PlantStatesLoader plantAssets;
+        private ToolIconLoader ToolIconLoader;
+        private PlantStatesLoader PlantAssets;
 
         // Menus
         private MenuHandler ToolMenu;
         private MenuHandler PlantMenu;
+
+        private FarmDisplay Farm;
 
         // Buttons
         private GameButton PlantMenuButton;
         private GameButton HarvestButton;
         private GameButton BackButton;
 
-        private ProportionalRectangle[,] plotCoords;
 
         public FarmSceneHandler()
         {
             // Load assets:
-
-            // Named assets
             NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farm.png");
-            NamedAssets.Load("Worm", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Worm.png");
-            NamedAssets.Load("Dead", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Dead.png");
-
-            NamedAssets.Load("Plot-watered", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-watered-center.png");
-            NamedAssets.Load("Plot-highlighted", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-highlighted-center.png");
-            NamedAssets.Load("Plot-both", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-both.png");
-            NamedAssets.Load("Plots-default", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plots-default.png");
 
             // Assets for toolbar
             //TODO held interface instead of just tool, do it for fruits also
-            toolIconLoader = new ToolIconLoader();
-            toolIconLoader.Add(typeof(Hand), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Hand.png"));
-            toolIconLoader.Add(typeof(Pail), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Pail.png"));
-            toolIconLoader.Add(typeof(Bag), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
-            toolIconLoader.Add(typeof(Bottle), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bottle.png"));
-            toolIconLoader.Add(typeof(Scythe), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Scythe.png"));
+            ToolIconLoader = new ToolIconLoader();
+            ToolIconLoader.Add(typeof(Hand), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Hand.png"));
+            ToolIconLoader.Add(typeof(Pail), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Pail.png"));
+            ToolIconLoader.Add(typeof(Bag), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
+            ToolIconLoader.Add(typeof(Bottle), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bottle.png"));
+            ToolIconLoader.Add(typeof(Scythe), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Scythe.png"));
 
             // Plant assets
             //TODO plant loader from config files
-            plantAssets = new();
-            plantAssets.Load(typeof(RaddishPlant),
+            PlantAssets = new();
+            PlantAssets.Load(typeof(RaddishPlant),
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Adult-raddish.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-raddish.png"
             );
-            plantAssets.Load(typeof(CarrotPlant),
+            PlantAssets.Load(typeof(CarrotPlant),
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Adult-carrot.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-carrot.png"
             );
-            plantAssets.Load(typeof(PotatoPlant),
+            PlantAssets.Load(typeof(PotatoPlant),
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling-multi.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling-multi.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Adult-potato.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-potato.png"
             );
-            plantAssets.Load(typeof(TomatoPlant),
+            PlantAssets.Load(typeof(TomatoPlant),
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling-multi.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling-multi.png",
@@ -527,100 +690,51 @@ namespace FarmerLibrary
             // Toolbar
             //TODO proportions to file???
             ToolMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Toolbar.png"), new ProportionalRectangle(0.31, 0.97, 0.82, 0.98));
-            ToolMenu.Add(new ToolButton(toolIconLoader.GetImage(typeof(Hand)), new Hand()));
-            ToolMenu.Add(new ToolButton(toolIconLoader.GetImage(typeof(Pail)), new Pail()));
-            ToolMenu.Add(new ToolButton(toolIconLoader.GetImage(typeof(Bag)), new Bag()));
-            ToolMenu.Add(new ToolButton(toolIconLoader.GetImage(typeof(Bottle)), new Bottle()));
-            ToolMenu.Add(new ToolButton(toolIconLoader.GetImage(typeof(Scythe)), new Scythe()));
+            ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
+            ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Pail)), new Pail()));
+            ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bag)), new Bag()));
+            ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bottle)), new Bottle()));
+            ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Scythe)), new Scythe()));
 
             ToolMenu.RepositionButtons(0.08, 0.14, 0.02, 0.01);
 
             // Planting menu
             PlantMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
-            PlantMenu.Add(new PlantButton(plantAssets.GetImage(typeof(RaddishPlant), GrowthState.Fruiting), new RaddishSeed())); //TODO temp icons
-            PlantMenu.Add(new PlantButton(plantAssets.GetImage(typeof(CarrotPlant), GrowthState.Fruiting), new CarrotSeed()));
-            PlantMenu.Add(new PlantButton(plantAssets.GetImage(typeof(TomatoPlant), GrowthState.Fruiting), new TomatoSeed()));
-            PlantMenu.Add(new PlantButton(plantAssets.GetImage(typeof(PotatoPlant), GrowthState.Fruiting), new PotatoSeed()));
+            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(RaddishPlant), GrowthState.Fruiting), new RaddishSeed())); //TODO temp icons
+            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(CarrotPlant), GrowthState.Fruiting), new CarrotSeed()));
+            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(TomatoPlant), GrowthState.Fruiting), new TomatoSeed()));
+            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(PotatoPlant), GrowthState.Fruiting), new PotatoSeed()));
 
             PlantMenu.RepositionButtons(0.10, 0.18, 0.03, 0.07);
             PlantMenu.Disable();
 
             // Initialize buttons:
-            HarvestButton = new HarvestHouseButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
-            BackButton = new ArrowButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView);
+            HarvestButton = new HarvestButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
+            BackButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView);
             PlantMenuButton = new PlantMenuButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Planting-plant.png"), new ProportionalRectangle(0.01, 0.20, 0.18, 0.44), PlantMenu);
-            //TODO add exit button
+
+            Farm = new FarmDisplay(PlantAssets);
+
+            // Handle enable/disable of farm
+            PlantMenuButton.ToDisable.Add(Farm);
+            foreach (var button in PlantMenu.Buttons)
+            {
+                button.ToEnable.Add(Farm);
+            }
 
             // Add controls to clickable list
+            // (not Farm, because that is handled separately)
             Clickables.Add(HarvestButton);
             Clickables.Add(PlantMenuButton);
             Clickables.Add(ToolMenu);
             Clickables.Add(PlantMenu);
             Clickables.Add(BackButton);
-
-            // Initialize plots:
-            // TODO remake as clickables
-            plotCoords = new ProportionalRectangle[3, 4]; //TODO hardcoded constants
-            double[] XBounds = [0.21, 0.39, 0.58, 0.77, 0.96];
-            double[] YBounds = [0.07, 0.31, 0.57, 0.81];
-            for (int i = 0; i < plotCoords.GetLength(0); i++)
-            {
-                for (int j = 0; j < plotCoords.GetLength(1); j++)
-                {
-                    plotCoords[i, j] = new ProportionalRectangle(XBounds[j], XBounds[j + 1], YBounds[i], YBounds[i + 1]);
-                }
-            }
         }
 
         public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
         {
             // Draw plots
-            g.DrawImage(NamedAssets["Plots-default"], 0, 0, absolueWidth, absoluteHeight);
-
-            for (int i = 0; i < state.CurrentFarm.Rows; i++)
-            {
-                for (int j = 0; j < state.CurrentFarm.Cols; j++)
-                {
-                    bool watered = state.CurrentFarm[i, j].Watered;
-                    bool highlighted = state.CurrentFarm[i, j] == state.CurrentFarm.Highlighted;
-                    Rectangle position = plotCoords[i, j].GetAbsolute(absolueWidth, absoluteHeight);
-
-                    // Draw plot highlights and watered color
-                    if (watered && highlighted)
-                    {
-                        g.DrawImage(NamedAssets["Plot-both"], position);
-                    }
-                    else if (watered)
-                    {
-                        g.DrawImage(NamedAssets["Plot-watered"], position);
-                    }
-                    else if (highlighted)
-                    {
-                        g.DrawImage(NamedAssets["Plot-highlighted"], position);
-                    }
-
-                    Type? plantType = state.CurrentFarm[i, j].PlantType;
-                    GrowthState? growthState = state.CurrentFarm[i, j].State;
-                    bool? alive = state.CurrentFarm[i, j].Alive;
-
-                    // Draw plant
-                    if (plantType is Type t && growthState is GrowthState s)
-                    {
-                        if (alive == true)
-                        {
-                            g.DrawImage(plantAssets.GetImage(t, s), position);
-                            if (state.CurrentFarm[i, j].HasBug)
-                            {
-                                g.DrawImage(NamedAssets["Worm"], position);
-                            }
-                        }
-                        else
-                        {
-                            g.DrawImage(NamedAssets["Dead"], position);
-                        }
-                    }
-                }
-            }
+            Farm.DrawSelf(g, absolueWidth, absoluteHeight, state); //TODO maybe redo dimentions to not be whole screen
 
             // Draw grass background
             g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
@@ -637,35 +751,21 @@ namespace FarmerLibrary
             // Draw controls
             foreach(IClickable clickable in Clickables)
             {
-                clickable.DrawSelf(g, absolueWidth, absoluteHeight);
+                clickable.DrawSelf(g, absolueWidth, absoluteHeight, state);
             }
         }
 
         public override void HandleClick(double X, double Y, GameState state)
         {
             base.HandleClick(X, Y, state);
-
-            //TODO handle disabling plots
-
-            // See if inside a plot
-            for (int i = 0; i < state.CurrentFarm.Rows; i++)
-            {
-                for (int j = 0; j < state.CurrentFarm.Cols; j++)
-                {
-                    if (plotCoords[i, j].InArea(X, Y))
-                    {
-                        if (state.CurrentTool is Tool t && state.HeldProduct is null)
-                            t.Use(state, state.CurrentFarm[i, j]);
-                        break;
-                    }
-                }
-            }
+            Farm.Click(X, Y, state);
         }
 
-        public override void HandleMouseMove(double X, double Y, GameState state) { }
+        public override void HandleMouseMove(double X, double Y, GameState state)
+        {
+            Farm.Hover(X, Y, state);
+        }
     }
-
-
 
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap
@@ -732,7 +832,6 @@ namespace FarmerLibrary
                 case View.FullView:
                     MainScene.HandleClick(XProportional, YProportional, gameState);
                     break;
-
                 case View.FarmView:
                     FarmScene.HandleClick(XProportional, YProportional, gameState);
                     break;
