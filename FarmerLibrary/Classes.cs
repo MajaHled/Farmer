@@ -1,6 +1,6 @@
 ﻿namespace FarmerLibrary
 {
-    public enum View { FullView, FarmView, CoopView, HouseView } //TODO shop view
+    public enum View { FullView, FarmView, CoopView, HouseView, RoadView, SeedShopView, ChickShopView }
 
     public abstract class Tool
     {

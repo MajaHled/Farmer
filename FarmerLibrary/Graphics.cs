@@ -551,6 +551,12 @@ namespace FarmerLibrary
 
         public abstract void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight);
 
+        protected void DrawClickables(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        {
+            foreach (IClickable clickable in Clickables)
+                clickable.DrawSelf(g, absolueWidth, absoluteHeight, state);
+        }
+
         public virtual void HandleClick(double X, double Y, GameState state)
         {
             foreach(IClickable clickable in Clickables)
@@ -587,11 +593,18 @@ namespace FarmerLibrary
             farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[0], YBounds[1]));
             farmCoords.Add(new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[2], YBounds[3]));
             farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]));
+
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.35), View.CoopView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.35), View.HouseView));
+
         }
 
         public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
         {
             g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
+
+            DrawClickables(state, g, absolueWidth, absoluteHeight);
         }
 
         public override void HandleClick(double X, double Y, GameState state)
@@ -748,11 +761,7 @@ namespace FarmerLibrary
                 PlantMenu.Disable();
             }
 
-            // Draw controls
-            foreach(IClickable clickable in Clickables)
-            {
-                clickable.DrawSelf(g, absolueWidth, absoluteHeight, state);
-            }
+            DrawClickables(state, g, absolueWidth, absoluteHeight);
         }
 
         public override void HandleClick(double X, double Y, GameState state)
@@ -767,6 +776,85 @@ namespace FarmerLibrary
         }
     }
 
+    public class RoadSceneHandler : SceneHandler
+    {
+        private NamedAssetsLoader NamedAssets = new();
+
+        public RoadSceneHandler()
+        {
+            // Load assets
+            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shops-background.png");
+
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.06, 0.37, 0.09, 0.79), View.SeedShopView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.63, 0.94, 0.09, 0.79), View.ChickShopView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), View.FullView));
+        }
+
+        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        {
+            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
+
+            DrawClickables(state, g, absolueWidth, absoluteHeight);
+        }
+    }
+
+    public class CoopSceneHandler : SceneHandler
+    {
+        private NamedAssetsLoader NamedAssets = new();
+
+        public CoopSceneHandler()
+        {
+            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-background.png");
+
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
+        }
+
+        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        {
+            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
+
+            DrawClickables(state, g, absolueWidth, absoluteHeight);
+        }
+    }
+
+    public class ShopSceneHandler : SceneHandler
+    {
+        private NamedAssetsLoader NamedAssets = new();
+        private MenuHandler ShoppingMenu; // TODO implement
+
+        public ShopSceneHandler()
+        {
+            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop.png");
+
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shop.png"), new ProportionalRectangle(0.79, 0.98, 0.01, 0.18), View.RoadView));
+        }
+
+        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        {
+            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
+
+            DrawClickables(state, g, absolueWidth, absoluteHeight);
+        }
+    }
+
+    public class HouseSceneHandler : SceneHandler
+    {
+        private NamedAssetsLoader NamedAssets = new();
+
+        public HouseSceneHandler()
+        {
+            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House.png");
+
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
+        }
+
+        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        {
+            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
+
+            DrawClickables(state, g, absolueWidth, absoluteHeight);
+        }
+    }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap
     public class FarmerGraphics
@@ -777,6 +865,11 @@ namespace FarmerLibrary
         // Individual scene handlers
         private SceneHandler MainScene = new MainSceneHandler();
         private SceneHandler FarmScene = new FarmSceneHandler();
+        private SceneHandler RoadScene = new RoadSceneHandler();
+        private SceneHandler CoopScene = new CoopSceneHandler();
+        private SceneHandler SeedShopScene = new ShopSceneHandler();
+        private SceneHandler ChickShopScene = new ShopSceneHandler();
+        private SceneHandler HouseScene = new HouseSceneHandler();
 
         private CursorHandler CursorHandler = new();
 
@@ -814,8 +907,19 @@ namespace FarmerLibrary
                     CursorHandler.Draw(g, width, height);
                     break;
                 case View.CoopView:
+                    CoopScene.Draw(gameState, g, width, height);
                     break;
                 case View.HouseView:
+                    HouseScene.Draw(gameState, g, width, height);
+                    break;
+                case View.RoadView:
+                    RoadScene.Draw(gameState, g, width, height);
+                    break;
+                case View.SeedShopView:
+                    SeedShopScene.Draw(gameState, g, width, height);
+                    break;
+                case View.ChickShopView:
+                    ChickShopScene.Draw(gameState, g, width, height);
                     break;
                 default:
                     break;
@@ -836,8 +940,19 @@ namespace FarmerLibrary
                     FarmScene.HandleClick(XProportional, YProportional, gameState);
                     break;
                 case View.CoopView:
+                    CoopScene.HandleClick(XProportional, YProportional, gameState);
                     break;
                 case View.HouseView:
+                    HouseScene.HandleClick(XProportional, YProportional, gameState);
+                    break;
+                case View.RoadView:
+                    RoadScene.HandleClick(XProportional, YProportional, gameState);
+                    break;
+                case View.SeedShopView:
+                    SeedShopScene.HandleClick(XProportional, YProportional, gameState);
+                    break;
+                case View.ChickShopView:
+                    ChickShopScene.HandleClick(XProportional, YProportional, gameState);
                     break;
                 default:
                     break;
@@ -861,8 +976,19 @@ namespace FarmerLibrary
                     FarmScene.HandleMouseMove(XProportional, YProportional, gameState);
                     break;
                 case View.CoopView:
+                    CoopScene.HandleMouseMove(XProportional, YProportional, gameState);
                     break;
                 case View.HouseView:
+                    HouseScene.HandleMouseMove(XProportional, YProportional, gameState);
+                    break;
+                case View.RoadView:
+                    RoadScene.HandleMouseMove(XProportional, YProportional, gameState);
+                    break;
+                case View.SeedShopView:
+                    SeedShopScene.HandleMouseMove(XProportional, YProportional, gameState);
+                    break;
+                case View.ChickShopView:
+                    ChickShopScene.HandleMouseMove(XProportional, YProportional, gameState);
                     break;
                 default:
                     break;
