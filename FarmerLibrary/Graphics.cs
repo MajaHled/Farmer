@@ -77,9 +77,28 @@ namespace FarmerLibrary
             return LoadedAssets[type];
         }
     }
+    public class SellableLoader
+    {
+        private Dictionary<Type, Bitmap> LoadedAssets = [];
+
+        public void Add(Type type, Bitmap bitmap)
+        {
+            if (!typeof(ISellable).IsAssignableFrom(type))
+                throw new ArgumentException($"Type {type} is not an ISellable implementation.");
+
+            LoadedAssets.Add(type, bitmap);
+        }
+
+        public Bitmap GetImage(Type type)
+        {
+            if (!LoadedAssets.ContainsKey(type))
+                throw new ArgumentException($"Image for type {type} not loaded.");
+            return LoadedAssets[type];
+        }
+    }
+
     #endregion
 
-    #region clicking
     public struct ProportionalRectangle
     {
         public double X1 { get; init; }
@@ -107,11 +126,18 @@ namespace FarmerLibrary
         public int GetAbsoluteHeight(int canvasHeight) => (int)(canvasHeight * (Y2 - Y1));
     }
 
-    public interface IClickable
+    public interface IDrawable
+    {
+        public void Draw(Graphics g, GameState state, int width, int height);
+
+    }
+
+    #region clicking
+    
+    public interface IClickable : IDrawable
     {
         public void Click(double x, double y, GameState state);
         public void Hover(double x, double y, GameState state);
-        public void DrawSelf(Graphics g, int width, int height, GameState state);
         public void Disable();
         public void Enable();
         public bool Enabled { get; }
@@ -152,7 +178,7 @@ namespace FarmerLibrary
 
         public void Enable() => Enabled = true; 
 
-        public void DrawSelf(Graphics g, int width, int height, GameState state)
+        public void Draw(Graphics g, GameState state, int width, int height)
         {
             if (Position is null)
                 throw new InvalidOperationException("Cannot draw button with uninitialized position.");
@@ -276,9 +302,10 @@ namespace FarmerLibrary
         }
     }
 
-    public abstract class BuyButton : GameButton
+    public sealed class BuyButton : GameButton
     {
         private IBuyable Product;
+
         public BuyButton(Bitmap icon, ProportionalRectangle position, IBuyable product) : base(icon, position)
         {
             Product = product;
@@ -290,9 +317,8 @@ namespace FarmerLibrary
 
         protected override void Action(GameState state)
         {
-            throw new NotImplementedException();
+            state.Buy(Product);
         }
-        //TODO
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
@@ -362,18 +388,21 @@ namespace FarmerLibrary
 
         public void Hover(double x, double y, GameState state)
         {
+            if (!Enabled)
+                return;
+
             foreach (GameButton button in Buttons)
                 button.Hover(x, y, state);
         }
 
-        public void DrawSelf(Graphics g, int width, int height, GameState state)
+        public void Draw(Graphics g, GameState state, int width, int height)
         {
             if (!Enabled)
                 return;
 
             g.DrawImage(Background, BackgroundPosition.GetAbsolute(width, height));
             foreach (GameButton button in Buttons)
-                button.DrawSelf(g, width, height, state);
+                button.Draw(g, state, width, height);
 
         }
 
@@ -403,7 +432,6 @@ namespace FarmerLibrary
         {
             Enabled = true;
             PlantStates = plantStates;
-
 
             // Named assets
             NamedAssets.Load("Worm", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Worm.png");
@@ -442,6 +470,7 @@ namespace FarmerLibrary
                 {
                     if (plotCoords[i, j].InArea(x, y))
                     {
+                        // TODO disable toolbar when harvesting somewhere
                         if (state.CurrentTool is Tool t && state.HeldProduct is null)
                             t.Use(state, state.CurrentFarm[i, j]);
                         break;
@@ -471,7 +500,7 @@ namespace FarmerLibrary
             }
         }
 
-        public void DrawSelf(Graphics g, int width, int height, GameState state)
+        public void Draw(Graphics g, GameState state, int width, int height)
         {
             g.DrawImage(NamedAssets["Plots-default"], 0, 0, width, height);
 
@@ -520,41 +549,74 @@ namespace FarmerLibrary
                 }
             }
         }
-        public void Disable()
-        {
-            Enabled = false;
-        }
+        public void Disable() => Enabled = false;
 
-        public void Enable()
-        {
-            Enabled = true;
-        }
+        public void Enable() => Enabled = true;
     }
 
     #endregion
 
-    public class CursorHandler
+    public class CursorHandler : IDrawable
     {
-        public Bitmap? Icon { get; set; }
-        public ProportionalRectangle Position { get; set; } = new();
+        private ProportionalRectangle Position { get; set; } = new();
+        private ToolIconLoader? ToolAssets;
+        private SellableLoader? FruitAssets;
 
-        public void Draw(Graphics g, int absoluteWidth, int absoluteHeight)
+        public static double CURSOR_SIZE = 0.1;
+
+        public void SetToolIcons(ToolIconLoader toolAssets)
         {
-            if (Icon is Bitmap i)
-                g.DrawImage(i, Position.GetAbsolute(absoluteWidth, absoluteHeight));
+            ToolAssets = toolAssets;
+        }
+
+        public void SetFruitIcons(SellableLoader fruitAssets)
+        {
+            FruitAssets = fruitAssets;
+        }
+
+        public void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
+        {
+            if (ToolAssets is ToolIconLoader ta && state.CurrentTool is Tool t)
+                g.DrawImage(ta.GetImage(t.GetType()), Position.GetAbsolute(absoluteWidth, absoluteHeight));
+            else if (FruitAssets is SellableLoader sl && state.HeldProduct is Fruit f)
+                g.DrawImage(sl.GetImage(f.GetType()), Position.GetAbsolute(absoluteWidth, absoluteHeight));
+        }
+
+        public void UpdatePosition(double x, double y)
+        {
+            Position = new ProportionalRectangle(x-CURSOR_SIZE/2, x+CURSOR_SIZE/2, y-CURSOR_SIZE/2, y+CURSOR_SIZE/2);
         }
     }
-    
-    public abstract class SceneHandler
+
+    public class MoneyDisplay : IDrawable
+    {
+        private Bitmap Background;
+        private ProportionalRectangle Position;
+
+        public MoneyDisplay(Bitmap background, ProportionalRectangle position)
+        {
+            Background = background;
+            Position = position;
+        }
+
+        public void Draw(Graphics g, GameState state, int width, int height)
+        {
+            g.DrawImage(Background, Position.GetAbsolute(width, height));
+            g.DrawString(state.PlayerMoney.ToString() + "$", new Font("Arial", 16), new SolidBrush(Color.Black), Position.GetAbsolute(width, height));
+        }
+    }
+
+    #region scene handlers
+    public abstract class SceneHandler : IDrawable
     {
         protected List<IClickable> Clickables = [];
 
-        public abstract void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight);
+        public abstract void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight);
 
         protected void DrawClickables(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
         {
             foreach (IClickable clickable in Clickables)
-                clickable.DrawSelf(g, absolueWidth, absoluteHeight, state);
+                clickable.Draw(g, state, absolueWidth, absoluteHeight);
         }
 
         public virtual void HandleClick(double X, double Y, GameState state)
@@ -595,12 +657,12 @@ namespace FarmerLibrary
             farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]));
 
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView));
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.35), View.CoopView));
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.35), View.HouseView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.352), View.CoopView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.352), View.HouseView));
 
         }
 
-        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
         {
             g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
 
@@ -637,8 +699,9 @@ namespace FarmerLibrary
     {
         // Loaders
         private NamedAssetsLoader NamedAssets = new();
-        private ToolIconLoader ToolIconLoader;
-        private PlantStatesLoader PlantAssets;
+        private ToolIconLoader ToolIconLoader = new();
+        private PlantStatesLoader PlantAssets = new();
+        private SellableLoader    FruitAssets = new();
 
         // Menus
         private MenuHandler ToolMenu;
@@ -651,6 +714,8 @@ namespace FarmerLibrary
         private GameButton HarvestButton;
         private GameButton BackButton;
 
+        // Cursor handler
+        private CursorHandler CursorHandler = new();
 
         public FarmSceneHandler()
         {
@@ -658,17 +723,21 @@ namespace FarmerLibrary
             NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farm.png");
 
             // Assets for toolbar
-            //TODO held interface instead of just tool, do it for fruits also
-            ToolIconLoader = new ToolIconLoader();
             ToolIconLoader.Add(typeof(Hand), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Hand.png"));
             ToolIconLoader.Add(typeof(Pail), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Pail.png"));
             ToolIconLoader.Add(typeof(Bag), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
             ToolIconLoader.Add(typeof(Bottle), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bottle.png"));
             ToolIconLoader.Add(typeof(Scythe), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Scythe.png"));
 
+            // Held fruit assets for harvesting
+            FruitAssets.Add(typeof(RaddishFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Raddish.png"));
+            FruitAssets.Add(typeof(CarrotFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Carrot.png"));
+            FruitAssets.Add(typeof(PotatoFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Potato.png"));
+            FruitAssets.Add(typeof(TomatoFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Tomato.png"));
+
+
             // Plant assets
             //TODO plant loader from config files
-            PlantAssets = new();
             PlantAssets.Load(typeof(RaddishPlant),
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling.png",
@@ -698,10 +767,12 @@ namespace FarmerLibrary
                 "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-tomato.png"
             );
 
-            // Initialize menus:
+            // Initialize cursor handler with icons
+            CursorHandler.SetToolIcons(ToolIconLoader);
+            CursorHandler.SetFruitIcons(FruitAssets);
 
+            // Initialize menus:
             // Toolbar
-            //TODO proportions to file???
             ToolMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Toolbar.png"), new ProportionalRectangle(0.31, 0.97, 0.82, 0.98));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Pail)), new Pail()));
@@ -713,10 +784,10 @@ namespace FarmerLibrary
 
             // Planting menu
             PlantMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
-            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(RaddishPlant), GrowthState.Fruiting), new RaddishSeed())); //TODO temp icons
-            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(CarrotPlant), GrowthState.Fruiting), new CarrotSeed()));
-            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(TomatoPlant), GrowthState.Fruiting), new TomatoSeed()));
-            PlantMenu.Add(new PlantButton(PlantAssets.GetImage(typeof(PotatoPlant), GrowthState.Fruiting), new PotatoSeed()));
+            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(RaddishFruit)), new RaddishSeed()));
+            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(CarrotFruit)), new CarrotSeed()));
+            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(TomatoFruit)), new TomatoSeed()));
+            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(PotatoFruit)), new PotatoSeed()));
 
             PlantMenu.RepositionButtons(0.10, 0.18, 0.03, 0.07);
             PlantMenu.Disable();
@@ -728,12 +799,18 @@ namespace FarmerLibrary
 
             Farm = new FarmDisplay(PlantAssets);
 
-            // Handle enable/disable of farm
+            // Handle enable/disable
             PlantMenuButton.ToDisable.Add(Farm);
+            PlantMenuButton.ToDisable.Add(ToolMenu);
             foreach (var button in PlantMenu.Buttons)
             {
                 button.ToEnable.Add(Farm);
+                button.ToEnable.Add(ToolMenu);
             }
+            BackButton.ToDisable.Add(PlantMenu);
+            BackButton.ToEnable.Add(PlantMenuButton);
+            BackButton.ToEnable.Add(Farm);
+            BackButton.ToEnable.Add(ToolMenu);
 
             // Add controls to clickable list
             // (not Farm, because that is handled separately)
@@ -744,13 +821,13 @@ namespace FarmerLibrary
             Clickables.Add(BackButton);
         }
 
-        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             // Draw plots
-            Farm.DrawSelf(g, absolueWidth, absoluteHeight, state); //TODO maybe redo dimentions to not be whole screen
+            Farm.Draw(g, state, absoluteWidth, absoluteHeight); //TODO maybe redo dimentions to not be whole screen
 
             // Draw grass background
-            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
+            g.DrawImage(NamedAssets["Background"], 0, 0, absoluteWidth, absoluteHeight);
 
             // Handle control visibility
             if (!state.CurrentFarm.Planted)
@@ -761,18 +838,24 @@ namespace FarmerLibrary
                 PlantMenu.Disable();
             }
 
-            DrawClickables(state, g, absolueWidth, absoluteHeight);
+            // Draw controls
+            DrawClickables(state, g, absoluteWidth, absoluteHeight);
+
+            // Draw cursor
+            CursorHandler.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
-        public override void HandleClick(double X, double Y, GameState state)
+        public override void HandleClick(double x, double y, GameState state)
         {
-            base.HandleClick(X, Y, state);
-            Farm.Click(X, Y, state);
+            base.HandleClick(x, y, state);
+            Farm.Click(x, y, state);
         }
 
-        public override void HandleMouseMove(double X, double Y, GameState state)
+        public override void HandleMouseMove(double x, double y, GameState state)
         {
-            Farm.Hover(X, Y, state);
+            Farm.Hover(x, y, state);
+
+            CursorHandler.UpdatePosition(x, y);
         }
     }
 
@@ -790,7 +873,7 @@ namespace FarmerLibrary
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), View.FullView));
         }
 
-        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
         {
             g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
 
@@ -809,7 +892,7 @@ namespace FarmerLibrary
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
         }
 
-        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
         {
             g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
 
@@ -826,10 +909,19 @@ namespace FarmerLibrary
         {
             NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop.png");
 
+            ShoppingMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop-menu.png"), new ProportionalRectangle(0.06, 0.69, 0.13, 0.87));
+
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shop.png"), new ProportionalRectangle(0.79, 0.98, 0.01, 0.18), View.RoadView));
+            Clickables.Add(ShoppingMenu);
         }
 
-        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        public void AddStock(IBuyable item, Bitmap icon)
+        {
+            ShoppingMenu.Add(new BuyButton(icon, item));
+            ShoppingMenu.RepositionButtons(0.11, 0.2, 0.01, 0.04);
+        }
+
+        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
         {
             g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
 
@@ -848,30 +940,30 @@ namespace FarmerLibrary
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
         }
 
-        public override void Draw(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
         {
             g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
 
             DrawClickables(state, g, absolueWidth, absoluteHeight);
         }
     }
+    #endregion
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap
     public class FarmerGraphics
     {
         private GameState gameState;
-        private NamedAssetsLoader assetLoader;
 
         // Individual scene handlers
         private SceneHandler MainScene = new MainSceneHandler();
         private SceneHandler FarmScene = new FarmSceneHandler();
         private SceneHandler RoadScene = new RoadSceneHandler();
         private SceneHandler CoopScene = new CoopSceneHandler();
-        private SceneHandler SeedShopScene = new ShopSceneHandler();
-        private SceneHandler ChickShopScene = new ShopSceneHandler();
+        private ShopSceneHandler SeedShopScene = new ShopSceneHandler();
+        private ShopSceneHandler ChickShopScene = new ShopSceneHandler();
         private SceneHandler HouseScene = new HouseSceneHandler();
 
-        private CursorHandler CursorHandler = new();
+        private MoneyDisplay MoneyDisplay;
 
         public int width, height;
         // TODO better access
@@ -880,15 +972,16 @@ namespace FarmerLibrary
         {
             this.gameState = gameState;
 
-            assetLoader = new NamedAssetsLoader();
-            //assetLoader.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farmer-even.png");
             width = 960;
             height = 540;
             //TODO better resize handling
 
-            assetLoader.Load("Plant", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Raddish-placeholder.png");
-            // TODO cleanup
-            
+            SeedShopScene.AddStock(new RaddishSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Raddish.png"));
+            SeedShopScene.AddStock(new CarrotSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Carrot.png"));
+            SeedShopScene.AddStock(new PotatoSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Potato.png"));
+            SeedShopScene.AddStock(new TomatoSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Tomato.png"));
+
+            MoneyDisplay = new MoneyDisplay(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.02, 0.13));
         }
 
         public void Paint(Graphics g)
@@ -896,34 +989,31 @@ namespace FarmerLibrary
             switch (gameState.CurrentView)
             {
                 case View.FullView:
-                    MainScene.Draw(gameState, g, width, height);
+                    MainScene.Draw(g, gameState, width, height);
                     break;
                 case View.FarmView:
-                    FarmScene.Draw(gameState, g, width, height);
-                    if (gameState.HeldProduct is not null || gameState.CurrentTool is not null)
-                        CursorHandler.Icon = assetLoader["Plant"]; //TODO temp icon
-                    else
-                        CursorHandler.Icon = null;
-                    CursorHandler.Draw(g, width, height);
+                    FarmScene.Draw(g, gameState, width, height);
                     break;
                 case View.CoopView:
-                    CoopScene.Draw(gameState, g, width, height);
+                    CoopScene.Draw(g, gameState, width, height);
                     break;
                 case View.HouseView:
-                    HouseScene.Draw(gameState, g, width, height);
+                    HouseScene.Draw(g, gameState, width, height);
                     break;
                 case View.RoadView:
-                    RoadScene.Draw(gameState, g, width, height);
+                    RoadScene.Draw(g, gameState, width, height);
                     break;
                 case View.SeedShopView:
-                    SeedShopScene.Draw(gameState, g, width, height);
+                    SeedShopScene.Draw(g, gameState, width, height);
                     break;
                 case View.ChickShopView:
-                    ChickShopScene.Draw(gameState, g, width, height);
+                    ChickShopScene.Draw(g, gameState, width, height);
                     break;
                 default:
                     break;
             }
+
+            MoneyDisplay.Draw(g, gameState, width, height);
         }
 
         public void HandleClick(int X, int Y)
@@ -963,9 +1053,6 @@ namespace FarmerLibrary
         {
             double XProportional = (double)X / width;
             double YProportional = (double)Y / height;
-
-            CursorHandler.Position = new ProportionalRectangle(XProportional - 0.1, XProportional + 0.1, YProportional - 0.1, YProportional +0.1);
-            // TODO proper sizing
 
             switch (gameState.CurrentView)
             {

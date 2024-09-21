@@ -13,7 +13,12 @@
     {
         public override void Use(GameState state, Plot plot)
         {
-            state.HeldProduct = plot.Harvest();
+            Fruit? harvest = plot.Harvest();
+            if (harvest is Fruit f)
+            {
+                state.HeldProduct = f;
+                state.CurrentTool = null;
+            }
         }
     }
 
