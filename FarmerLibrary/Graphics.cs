@@ -219,10 +219,6 @@ namespace FarmerLibrary
         {
             PlantMenu = plantMenu;
         }
-        public PlantMenuButton(Bitmap icon, MenuHandler plantMenu) : base(icon)
-        {
-            PlantMenu = plantMenu;
-        }
 
         protected override void Action(GameState state)
         {
@@ -236,8 +232,6 @@ namespace FarmerLibrary
     public sealed class HarvestButton : GameButton
     {
         public HarvestButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
-        public HarvestButton(Bitmap icon) : base(icon) { }
-
 
         protected override void Action(GameState state)
         {
@@ -249,10 +243,6 @@ namespace FarmerLibrary
     {
         private readonly View Destination;
         public SceneSwitchButton(Bitmap icon, ProportionalRectangle position, View destination) : base(icon, position)
-        {
-            Destination = destination;
-        }
-        public SceneSwitchButton(Bitmap icon, View destination) : base(icon)
         {
             Destination = destination;
         }
@@ -318,6 +308,16 @@ namespace FarmerLibrary
         protected override void Action(GameState state)
         {
             state.Buy(Product);
+        }
+    }
+
+    public sealed class NewDayButton : GameButton
+    {
+        public NewDayButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
+
+        protected override void Action(GameState state)
+        {
+            state.EndDay();
         }
     }
 
@@ -673,6 +673,7 @@ namespace FarmerLibrary
         {
             base.HandleClick(X, Y, state);
 
+            // TODO redu farms as clickables
             // See if inside a farm
             for (int i = 0; i < farmCoords.Count; i++)
             {
@@ -683,9 +684,6 @@ namespace FarmerLibrary
                     break;
                 }
             }
-            //TODO temp
-            if (Y < 0.3)
-                state.EndDay();
         }
 
         public override void HandleMouseMove(double X, double Y, GameState state)
@@ -938,6 +936,7 @@ namespace FarmerLibrary
             NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House.png");
 
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
+            Clickables.Add(new NewDayButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\New-day.png"), new ProportionalRectangle(0.02, 0.14, 0.12, 0.35)));
         }
 
         public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
@@ -947,6 +946,7 @@ namespace FarmerLibrary
             DrawClickables(state, g, absolueWidth, absoluteHeight);
         }
     }
+
     #endregion
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap
