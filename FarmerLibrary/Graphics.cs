@@ -610,8 +610,15 @@ namespace FarmerLibrary
     public abstract class SceneHandler : IDrawable
     {
         protected List<IClickable> Clickables = [];
+        protected Bitmap? Background { get; init; }
 
-        public abstract void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight);
+        public virtual void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
+        {
+            if (Background is Bitmap b)
+                g.DrawImage(b, 0, 0, absolueWidth, absoluteHeight);
+
+            DrawClickables(state, g, absolueWidth, absoluteHeight);
+        }
 
         protected void DrawClickables(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
         {
@@ -626,6 +633,7 @@ namespace FarmerLibrary
                 clickable.Click(X, Y, state);
             }
         }
+
         public virtual void HandleMouseMove(double X, double Y, GameState state)
         {
             foreach (IClickable clickable in Clickables)
@@ -637,13 +645,12 @@ namespace FarmerLibrary
 
     public class MainSceneHandler : SceneHandler
     {
-        private NamedAssetsLoader NamedAssets = new();
         private List<ProportionalRectangle> farmCoords;
 
         public MainSceneHandler()
         {
             // Load assets
-            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farmer-even.png");
+            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farmer-even.png");
 
             // Initialize farm interaction areas
             // TODO remake as clickables
@@ -662,18 +669,11 @@ namespace FarmerLibrary
 
         }
 
-        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
-        {
-            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
-
-            DrawClickables(state, g, absolueWidth, absoluteHeight);
-        }
-
         public override void HandleClick(double X, double Y, GameState state)
         {
             base.HandleClick(X, Y, state);
 
-            // TODO redu farms as clickables
+            // TODO redo farms as clickables
             // See if inside a farm
             for (int i = 0; i < farmCoords.Count; i++)
             {
@@ -696,7 +696,6 @@ namespace FarmerLibrary
     public class FarmSceneHandler : SceneHandler
     {
         // Loaders
-        private NamedAssetsLoader NamedAssets = new();
         private ToolIconLoader ToolIconLoader = new();
         private PlantStatesLoader PlantAssets = new();
         private SellableLoader    FruitAssets = new();
@@ -718,7 +717,7 @@ namespace FarmerLibrary
         public FarmSceneHandler()
         {
             // Load assets:
-            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farm.png");
+            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farm.png");
 
             // Assets for toolbar
             ToolIconLoader.Add(typeof(Hand), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Hand.png"));
@@ -819,13 +818,14 @@ namespace FarmerLibrary
             Clickables.Add(BackButton);
         }
 
+        // Custom override due to needing to draw background over the plots
         public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             // Draw plots
             Farm.Draw(g, state, absoluteWidth, absoluteHeight); //TODO maybe redo dimentions to not be whole screen
 
             // Draw grass background
-            g.DrawImage(NamedAssets["Background"], 0, 0, absoluteWidth, absoluteHeight);
+            g.DrawImage(Background, 0, 0, absoluteWidth, absoluteHeight);
 
             // Handle control visibility
             if (!state.CurrentFarm.Planted)
@@ -859,53 +859,34 @@ namespace FarmerLibrary
 
     public class RoadSceneHandler : SceneHandler
     {
-        private NamedAssetsLoader NamedAssets = new();
-
         public RoadSceneHandler()
         {
             // Load assets
-            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shops-background.png");
+            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shops-background.png");
 
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.06, 0.37, 0.09, 0.79), View.SeedShopView));
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.63, 0.94, 0.09, 0.79), View.ChickShopView));
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), View.FullView));
         }
-
-        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
-        {
-            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
-
-            DrawClickables(state, g, absolueWidth, absoluteHeight);
-        }
     }
 
     public class CoopSceneHandler : SceneHandler
     {
-        private NamedAssetsLoader NamedAssets = new();
-
         public CoopSceneHandler()
         {
-            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-background.png");
+            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-background.png");
 
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
-        }
-
-        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
-        {
-            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
-
-            DrawClickables(state, g, absolueWidth, absoluteHeight);
         }
     }
 
     public class ShopSceneHandler : SceneHandler
     {
-        private NamedAssetsLoader NamedAssets = new();
         private MenuHandler ShoppingMenu; // TODO implement
 
         public ShopSceneHandler()
         {
-            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop.png");
+            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop.png");
 
             ShoppingMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop-menu.png"), new ProportionalRectangle(0.06, 0.69, 0.13, 0.87));
 
@@ -918,32 +899,17 @@ namespace FarmerLibrary
             ShoppingMenu.Add(new BuyButton(icon, item));
             ShoppingMenu.RepositionButtons(0.11, 0.2, 0.01, 0.04);
         }
-
-        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
-        {
-            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
-
-            DrawClickables(state, g, absolueWidth, absoluteHeight);
-        }
     }
 
     public class HouseSceneHandler : SceneHandler
     {
-        private NamedAssetsLoader NamedAssets = new();
 
         public HouseSceneHandler()
         {
-            NamedAssets.Load("Background", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House.png");
+            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House.png");
 
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
             Clickables.Add(new NewDayButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\New-day.png"), new ProportionalRectangle(0.02, 0.14, 0.12, 0.35)));
-        }
-
-        public override void Draw(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
-        {
-            g.DrawImage(NamedAssets["Background"], 0, 0, absolueWidth, absoluteHeight);
-
-            DrawClickables(state, g, absolueWidth, absoluteHeight);
         }
     }
 
