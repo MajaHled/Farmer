@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Printing;
 
 namespace FarmerLibrary
 {
@@ -251,9 +252,8 @@ namespace FarmerLibrary
         protected override void Action(GameState state)
         {
             PlantMenu.Enable();
-            //TODO handle disabling
             state.CurrentTool = null;
-            state.HeldProduct = null; //TODO handle enabling this only once we sell lmao 
+            state.HeldProduct = null;
         }
     }
 
@@ -397,9 +397,32 @@ namespace FarmerLibrary
                 t.Use(state, Spot);
         }
     }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class ToolExitButton : GameButton
+    {
+        private MenuHandler ToolMenu;
+        public ToolExitButton(MenuHandler toolMenu, Bitmap icon) : base(icon)
+        {
+            ToolMenu = toolMenu;
+        }
+
+        public ToolExitButton(MenuHandler toolMenu, Bitmap icon, ProportionalRectangle position) : base(icon, position)
+        {
+            ToolMenu = toolMenu;
+        }
+
+        protected override void Action(GameState state)
+        {
+            state.CurrentTool = null;
+            ToolMenu.Enable();
+            this.Disable();
+        }
+    }
+
     #endregion
 
-    
+
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MenuHandler : IClickable
     {
@@ -417,10 +440,23 @@ namespace FarmerLibrary
             Buttons = [];
         }
 
-        public void Add(GameButton button)
+        public void AddToEnable(IClickable clickable)
         {
-            Buttons.Add(button);
+            foreach (var b in Buttons)
+            {
+                b.ToEnable.Add(clickable);
+            }
         }
+
+        public void AddToDisable(IClickable clickable)
+        {
+            foreach (var b in Buttons)
+            {
+                b.ToDisable.Add(clickable);
+            }
+        }
+
+        public void Add(GameButton button) => Buttons.Add(button);
 
         // TODO do better, maybe just stretch to max or something, this is real difficult to use
         public void RepositionButtons(double width, double height, double gap, double edgeGap)
@@ -457,7 +493,7 @@ namespace FarmerLibrary
             }
         }
 
-        public void Click(double x, double y, GameState state)
+        public virtual void Click(double x, double y, GameState state)
         {
             if (!Enabled)
                 return;
@@ -501,6 +537,27 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class ToolMenuHandler : MenuHandler
+    {
+        private ToolExitButton? exit;
+        public ToolMenuHandler(Bitmap background, ProportionalRectangle backgroundPosition) : base(background, backgroundPosition) { }
+
+        public void SetExitButton(ToolExitButton exitButton)
+        {
+            exit = exitButton;
+        }
+
+        public override void Click(double x, double y, GameState state)
+        {
+            base.Click(x, y, state);
+            if (state.CurrentTool is not null)
+            {
+                exit?.Enable();
+                this.Disable();
+            }
+        }
+    }
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class FarmDisplay : IClickable
     {
@@ -897,7 +954,8 @@ namespace FarmerLibrary
         private SellableLoader FruitAssets = new();
 
         // Menus
-        private MenuHandler ToolMenu;
+        private ToolMenuHandler ToolMenu;
+        private ToolExitButton ExitButton;
         private MenuHandler PlantMenu;
 
         private FarmDisplay Farm;
@@ -961,7 +1019,7 @@ namespace FarmerLibrary
 
             // Initialize menus:
             // Toolbar
-            ToolMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Toolbar.png"), new ProportionalRectangle(0.31, 0.97, 0.82, 0.98));
+            ToolMenu = new ToolMenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Toolbar.png"), new ProportionalRectangle(0.31, 0.97, 0.82, 0.98));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Pail)), new Pail()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bag)), new Bag()));
@@ -969,6 +1027,10 @@ namespace FarmerLibrary
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Scythe)), new Scythe()));
 
             ToolMenu.RepositionButtons(0.08, 0.14, 0.02, 0.01);
+
+            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
+            ExitButton.Disable();
+            ToolMenu.SetExitButton(ExitButton);
 
             // Planting menu
             PlantMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
@@ -990,15 +1052,20 @@ namespace FarmerLibrary
             // Handle enable/disable
             PlantMenuButton.ToDisable.Add(Farm);
             PlantMenuButton.ToDisable.Add(ToolMenu);
-            foreach (var button in PlantMenu.Buttons)
-            {
-                button.ToEnable.Add(Farm);
-                button.ToEnable.Add(ToolMenu);
-            }
+            PlantMenu.AddToEnable(Farm);
+            PlantMenu.AddToEnable(ToolMenu);
+
             BackButton.ToDisable.Add(PlantMenu);
             BackButton.ToEnable.Add(PlantMenuButton);
             BackButton.ToEnable.Add(Farm);
             BackButton.ToEnable.Add(ToolMenu);
+
+            ExitButton.ToEnable.Add(BackButton);
+            ToolMenu.AddToDisable(BackButton);
+
+            HarvestButton.ToEnable.Add(ToolMenu);
+            HarvestButton.ToEnable.Add(BackButton);
+            HarvestButton.ToDisable.Add(ExitButton);
 
             // Add controls to clickable list
             // (not Farm, because that is handled separately)
@@ -1007,6 +1074,7 @@ namespace FarmerLibrary
             Clickables.Add(ToolMenu);
             Clickables.Add(PlantMenu);
             Clickables.Add(BackButton);
+            Clickables.Add(ExitButton);
         }
 
         // Custom override due to needing to draw background over the plots
@@ -1025,6 +1093,7 @@ namespace FarmerLibrary
             {
                 PlantMenuButton.Disable();
                 HarvestButton.Enable();
+                ExitButton.Disable();
             }
             else
                 HarvestButton.Disable();
@@ -1091,8 +1160,10 @@ namespace FarmerLibrary
         private List<EggButton> EggSpots = new();
 
         // Menus
-        private MenuHandler ToolMenu;
+        private ToolMenuHandler ToolMenu;
+        private ToolExitButton ExitButton;
         private HarvestButton HarvestHouse;
+        private SceneSwitchButton BackButton;
 
         Random rnd = new();
 
@@ -1113,14 +1184,19 @@ namespace FarmerLibrary
             Cursor.SetSellableIcons(EggAssets);
 
             // Menu
-            ToolMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-menu.png"), new ProportionalRectangle(0.32, 0.59, 0.11, 0.27));
+            ToolMenu = new ToolMenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-menu.png"), new ProportionalRectangle(0.32, 0.59, 0.11, 0.27));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bag)), new Bag()));
 
             ToolMenu.RepositionButtons(0.069, 0.12, 0.02, 0.01);
 
+            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
+            ExitButton.Disable();
+            ToolMenu.SetExitButton(ExitButton);
+
             // Controls
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
+            BackButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView);
+            Clickables.Add(BackButton);
             Clickables.Add(new FeederDisplay(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Feeder.png"),
                                              new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Feed.png"),
                                              new ProportionalRectangle(0.24, 0.64, 0.4, 0.72)));
@@ -1128,15 +1204,26 @@ namespace FarmerLibrary
 
             HarvestHouse = new HarvestButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
             Clickables.Add(HarvestHouse);
+            Clickables.Add(ExitButton);
+
+            ExitButton.ToEnable.Add(BackButton);
+            ToolMenu.AddToDisable(BackButton);
+            HarvestHouse.ToEnable.Add(BackButton);
+            HarvestHouse.ToEnable.Add(ToolMenu);
         }
 
         public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             // Determine harvest house visibility
             if (state.HeldProduct is Egg)
+            {
                 HarvestHouse.Enable();
+                ExitButton.Disable();
+            }
             else
+            {
                 HarvestHouse.Disable();
+            }
 
             base.Draw(g, state, absoluteWidth, absoluteHeight);
 
@@ -1358,10 +1445,11 @@ namespace FarmerLibrary
 // deal with text displays (amounts and prices)
 // saving
 // challenges & events
-// housekeeping (images, enable/disable of buttons, restructure, TODOs)
+// housekeeping (images, restructure, TODOs)
 // Testing chicken
 // Sort chickens
-// Exit button
+// Exit buttons
+// Add displays to scene handlers
 // Docs
 // Presentation
 // Possibly: More plants
