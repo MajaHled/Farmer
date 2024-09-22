@@ -568,6 +568,8 @@
             if (!CanPlant)
                 return false;
             PlantedPlant = seed.PlantToPlot(this);
+            if (Watered)
+                PlantedPlant.Water();
             return true;
         }
 

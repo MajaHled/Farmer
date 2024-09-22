@@ -1309,7 +1309,6 @@ namespace FarmerLibrary
 // challenges & events
 // hover behavior
 // housekeeping (images, enable/disable of buttons, restructure, TODOs)
-// Edgecase of planting into watered plot!!!
 // Testing chicken
 // Docs
 // Presentation
