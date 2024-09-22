@@ -4,14 +4,24 @@
 
     public abstract class Tool
     {
-        public abstract void Use(GameState state, IToolAcceptor target);
+        public void Use(GameState state, IToolAcceptor target)
+        {
+            if (!state.CanWork())
+                return;
+
+            bool expended = UseInternal(state, target);
+            if (expended)
+                state.DoLabor();
+        }
+
+        public abstract bool UseInternal(GameState state, IToolAcceptor target);
     }
 
     #region Tool classes
 
     public sealed class Hand : Tool
     {
-        public override void Use(GameState state, IToolAcceptor target)
+        public override bool UseInternal(GameState state, IToolAcceptor target)
         {
             if (target is Plot plot)
             {
@@ -20,6 +30,7 @@
                 {
                     state.HeldProduct = f;
                     state.CurrentTool = null;
+                    return true;
                 }
             }
 
@@ -30,54 +41,64 @@
                 {
                     state.HeldProduct = e;
                     state.CurrentTool = null;
+                    return true;
                 }
 
             }
+
+            return false;
         }
     }
 
     public sealed class Pail : Tool
     {
-        public override void Use(GameState state, IToolAcceptor targer)
+        public override bool UseInternal(GameState state, IToolAcceptor target)
         {
-            if (targer is Plot plot)
-                plot.Water();
+            if (target is Plot plot)
+            {
+                return plot.Water();
+            }
+            return false;
         }
     }
 
     public sealed class Bag : Tool
     {
-        public override void Use(GameState state, IToolAcceptor target)
+        public override bool UseInternal(GameState state, IToolAcceptor target)
         {
             if (target is Plot plot)
             {
-                plot.Fertilize();
+                return plot.Fertilize();
                 // TODO subtract fertilizer
             }
 
             if (target is ChickenFeeder feeder)
             {
-                feeder.AddFeed();
+                return feeder.AddFeed();
                 // TODO subtract feed
             }
+
+            return false;
         }
     }
 
     public sealed class Bottle : Tool
     {
-        public override void Use(GameState state, IToolAcceptor target)
+        public override bool UseInternal(GameState state, IToolAcceptor target)
         {
             if (target is Plot plot)
-                plot.BugSpray();
+                return plot.BugSpray();
+            return false;
         }
     }
 
     public sealed class Scythe : Tool
     {
-        public override void Use(GameState state, IToolAcceptor target)
+        public override bool UseInternal(GameState state, IToolAcceptor target)
         {
             if (target is Plot plot)
-                plot.DestroyPlant();
+                return plot.DestroyPlant();
+            return false;
         }
     }
 
@@ -164,6 +185,13 @@
             HeldProduct = null;
         }
 
+        // Stamina
+        public double Stamina { get; private set; } = 1;
+        public readonly double STAMINA_STEP;
+        public void DoLabor() => Stamina = Math.Max(0, Stamina - STAMINA_STEP);
+        public bool CanWork() => Stamina >= STAMINA_STEP;
+        
+
         public void ResetTemps()
         {
             CurrentTool = null;
@@ -171,7 +199,7 @@
             CurrentFarmIndex = 0;
         }
 
-        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney)
+        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney, uint actionsPerDay)
         {
             for (int i = 0; i < numFarms; i++)
             {
@@ -192,6 +220,8 @@
             OwnedAmounts.Add(typeof(PotatoSeed), 5);
             OwnedAmounts.Add(typeof(TomatoSeed), 5);
             OwnedAmounts.Add(typeof(Chicken), 2);
+
+            STAMINA_STEP = 1 / (double) actionsPerDay;
         }
 
         public void EndDay()
@@ -201,11 +231,13 @@
             
             foreach (var coop in Coops)
                 coop.EndDay();
+
+            Stamina = 1;
         }
 
         public static GameState GetClassicStartingState()
         {
-            return new GameState(4, 3, 4, 1, 5, View.FullView, 1000);
+            return new GameState(4, 3, 4, 1, 5, View.FullView, 1000, 160);
         }
     }
 
@@ -521,9 +553,13 @@
             PlantedPlant?.EndDay();
         }
 
-        public void DestroyPlant()
+        public bool DestroyPlant()
         {
+            if (PlantedPlant is null)
+                return false;
+
             PlantedPlant = null;
+            return true;
         }
 
         public bool CanPlant => PlantedPlant is null;

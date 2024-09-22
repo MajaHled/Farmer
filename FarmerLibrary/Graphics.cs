@@ -102,6 +102,8 @@ namespace FarmerLibrary
 
     #endregion
 
+
+
     public struct ProportionalRectangle
     {
         public double X1 { get; init; }
@@ -135,6 +137,8 @@ namespace FarmerLibrary
 
     }
 
+
+
     #region clicking
     
     public interface IClickable : IDrawable
@@ -145,6 +149,8 @@ namespace FarmerLibrary
         public void Enable();
         public bool Enabled { get; }
     }
+
+
 
     #region Buttons
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
@@ -250,13 +256,25 @@ namespace FarmerLibrary
     public sealed class SceneSwitchButton : GameButton
     {
         private readonly View Destination;
+        private bool takesStamina = false;
+
         public SceneSwitchButton(Bitmap icon, ProportionalRectangle position, View destination) : base(icon, position)
         {
             Destination = destination;
         }
+        public void EnableStamina() => takesStamina = true;
+        public void DisableStamina() => takesStamina = false;
+
 
         protected override void Action(GameState state)
         {
+            if (takesStamina)
+            {
+                if (!state.CanWork())
+                    return;
+                state.DoLabor();
+            }
+
             state.CurrentView = Destination;
             state.ResetTemps();
         }
@@ -360,6 +378,8 @@ namespace FarmerLibrary
     }
     #endregion
 
+    
+    
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MenuHandler : IClickable
     {
@@ -656,6 +676,8 @@ namespace FarmerLibrary
     }
     #endregion
 
+
+
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class CursorHandler : IDrawable
     {
@@ -702,6 +724,36 @@ namespace FarmerLibrary
             g.DrawString(state.PlayerMoney.ToString() + "$", new Font("Arial", 16), new SolidBrush(Color.Black), Position.GetAbsolute(width, height));
         }
     }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class StaminaDisplay(ProportionalRectangle position, Bitmap background, Bitmap level, Bitmap empty, Bitmap top) : IDrawable
+    {
+        public void Draw(Graphics g, GameState state, int width, int height)
+        {
+            g.DrawImage(background, position.GetAbsolute(width, height));
+
+            if (!state.CanWork())
+                g.DrawImage(empty, position.GetAbsolute(width, height));
+            else
+            {
+                // Crop out bottom part of level picture
+                int y = (int)(level.Height * (1 - state.Stamina));
+                int h = (int)(level.Height * state.Stamina);
+                Rectangle CropArea = new Rectangle(0, y, level.Width, h);
+
+                // Display at the bottom of stamina display
+                double top = position.Y1 + (position.Y2 - position.Y1) * (1 - state.Stamina);
+                ProportionalRectangle newPosition = new ProportionalRectangle(position.X1, position.X2, top, position.Y2);
+                using (Bitmap newLevel = level.Clone(CropArea, level.PixelFormat))
+                    g.DrawImage(newLevel, newPosition.GetAbsolute(width, height));
+            }
+
+
+            g.DrawImage(top, position.GetAbsolute(width, height));
+        }
+    }
+
+
 
     #region scene handlers
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
@@ -775,7 +827,10 @@ namespace FarmerLibrary
             farmCoords.Add(new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[2], YBounds[3]));
             farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]));
 
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView));
+            var btn = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView);
+            btn.EnableStamina();
+            Clickables.Add(btn);
+
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.352), View.CoopView));
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.352), View.HouseView));
 
@@ -1089,7 +1144,6 @@ namespace FarmerLibrary
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class HouseSceneHandler : SceneHandler
     {
-
         public HouseSceneHandler()
         {
             Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House.png");
@@ -1100,6 +1154,8 @@ namespace FarmerLibrary
     }
 
     #endregion
+
+
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap
     public class FarmerGraphics
@@ -1115,7 +1171,8 @@ namespace FarmerLibrary
         private ShopSceneHandler ChickShopScene = new ShopSceneHandler();
         private SceneHandler HouseScene = new HouseSceneHandler();
 
-        private MoneyDisplay MoneyDisplay;
+        private MoneyDisplay Money;
+        private StaminaDisplay Stamina;
 
         public int width, height;
         // TODO better access
@@ -1136,7 +1193,12 @@ namespace FarmerLibrary
             ChickShopScene.AddStock(new Chicken(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Chicken.png"));
             //ChickShopScene.AddStock(new Bag(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
 
-            MoneyDisplay = new MoneyDisplay(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.02, 0.13));
+            Money = new MoneyDisplay(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.02, 0.13));
+            Stamina = new StaminaDisplay(new ProportionalRectangle(0.9, 0.98, 0.02, 0.15),
+                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-background.png"),
+                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-level.png"),
+                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-empty.png"),
+                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-top.png"));
         }
 
         public void Paint(Graphics g)
@@ -1168,7 +1230,8 @@ namespace FarmerLibrary
                     break;
             }
 
-            MoneyDisplay.Draw(g, gameState, width, height);
+            Money.Draw(g, gameState, width, height);
+            Stamina.Draw(g, gameState, width, height);
         }
 
         public void HandleClick(int X, int Y)
@@ -1243,7 +1306,6 @@ namespace FarmerLibrary
 // do chicken shop
 // deal with text displays (amounts and prices)
 // saving
-// stamina
 // challenges & events
 // hover behavior
 // housekeeping (images, enable/disable of buttons, restructure, TODOs)
