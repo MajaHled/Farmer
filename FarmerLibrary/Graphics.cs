@@ -3,8 +3,7 @@
 namespace FarmerLibrary
 {
     #region loaders
-    [System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap,
-                                                               //TODO add to appropriate places
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap
     public class NamedAssetsLoader
     {
         private Dictionary<string, Bitmap> LoadedAssets = [];
@@ -58,6 +57,8 @@ namespace FarmerLibrary
         }
 
     }
+    
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class ToolIconLoader
     {
         private Dictionary<Type, Bitmap> LoadedAssets = [];
@@ -77,6 +78,8 @@ namespace FarmerLibrary
             return LoadedAssets[type];
         }
     }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class SellableLoader
     {
         private Dictionary<Type, Bitmap> LoadedAssets = [];
@@ -144,6 +147,7 @@ namespace FarmerLibrary
     }
 
     #region Buttons
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public abstract class GameButton : IClickable
     {
         protected Bitmap Icon;
@@ -213,6 +217,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class PlantMenuButton : GameButton
     {
         private MenuHandler PlantMenu;
@@ -230,6 +235,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class HarvestButton : GameButton
     {
         public HarvestButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
@@ -240,6 +246,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class SceneSwitchButton : GameButton
     {
         private readonly View Destination;
@@ -255,6 +262,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class ToolButton : GameButton
     {
         private Tool? Tool;
@@ -274,6 +282,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class PlantButton : GameButton
     {
         private Seed ToPlant;
@@ -293,6 +302,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class BuyButton : GameButton
     {
         private IBuyable Product;
@@ -312,6 +322,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class NewDayButton : GameButton
     {
         public NewDayButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
@@ -319,6 +330,32 @@ namespace FarmerLibrary
         protected override void Action(GameState state)
         {
             state.EndDay();
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class EggButton : GameButton
+    {
+        private EggSpot Spot;
+
+        public EggButton(Bitmap icon, ProportionalRectangle position, EggSpot spot) : base(icon, position)
+        {
+            Spot = spot;
+        }
+
+        public new void Draw(Graphics g, GameState state, int width, int height)
+        {
+            if (Position is null)
+                throw new InvalidOperationException("Cannot draw button with uninitialized position.");
+
+            else if (Position is ProportionalRectangle p && Enabled && Spot.HasEgg())
+                g.DrawImage(Icon, p.GetAbsolute(width, height));
+        }
+
+        protected override void Action(GameState state)
+        {
+            if (state.CurrentTool is Tool t && state.HeldProduct is null)
+                t.Use(state, Spot);
         }
     }
     #endregion
@@ -557,6 +594,7 @@ namespace FarmerLibrary
         public void Enable() => Enabled = true;
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class FeederDisplay : IClickable
     {
         private ProportionalRectangle[] feederCoords;
@@ -617,38 +655,35 @@ namespace FarmerLibrary
     }
     #endregion
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class CursorHandler : IDrawable
     {
         private ProportionalRectangle Position { get; set; } = new();
         private ToolIconLoader? ToolAssets;
         private SellableLoader? SellAssets;
 
-        public static double CURSOR_SIZE = 0.1;
+        public static double CURSOR_WIDTH = 0.08;
+        public static double CURSOR_HEIGHT = 0.14;
 
-        public void SetToolIcons(ToolIconLoader toolAssets)
-        {
-            ToolAssets = toolAssets;
-        }
+        public void SetToolIcons(ToolIconLoader toolAssets) => ToolAssets = toolAssets;
 
-        public void SetSellableIcons(SellableLoader assets)
-        {
-            SellAssets = assets;
-        }
+        public void SetSellableIcons(SellableLoader assets) => SellAssets = assets;
 
         public void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             if (ToolAssets is ToolIconLoader ta && state.CurrentTool is Tool t)
                 g.DrawImage(ta.GetImage(t.GetType()), Position.GetAbsolute(absoluteWidth, absoluteHeight));
-            else if (SellAssets is SellableLoader sl && state.HeldProduct is Fruit f)
-                g.DrawImage(sl.GetImage(f.GetType()), Position.GetAbsolute(absoluteWidth, absoluteHeight));
+            else if (SellAssets is SellableLoader sl && state.HeldProduct is ISellable s)
+                g.DrawImage(sl.GetImage(s.GetType()), Position.GetAbsolute(absoluteWidth, absoluteHeight));
         }
 
         public void UpdatePosition(double x, double y)
         {
-            Position = new ProportionalRectangle(x-CURSOR_SIZE/2, x+CURSOR_SIZE/2, y-CURSOR_SIZE/2, y+CURSOR_SIZE/2);
+            Position = new ProportionalRectangle(x-CURSOR_WIDTH/2, x+CURSOR_WIDTH/2, y-CURSOR_HEIGHT/2, y+CURSOR_HEIGHT/2);
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MoneyDisplay : IDrawable
     {
         private Bitmap Background;
@@ -668,6 +703,7 @@ namespace FarmerLibrary
     }
 
     #region scene handlers
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public abstract class SceneHandler : IDrawable
     {
         protected List<IClickable> Clickables = [];
@@ -704,6 +740,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MainSceneHandler : SceneHandler
     {
         private List<ProportionalRectangle> farmCoords;
@@ -916,6 +953,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class RoadSceneHandler : SceneHandler
     {
         public RoadSceneHandler()
@@ -939,9 +977,11 @@ namespace FarmerLibrary
         // Chicken and egg rendering
         private Bitmap Chicken;
         private List<ProportionalRectangle> ChickenPositions = new();
+        private List<EggButton> EggSpots = new();
 
         // Menus
         private MenuHandler ToolMenu;
+        private HarvestButton HarvestHouse;
 
         // Cursor
         private CursorHandler CursorHandler = new();
@@ -977,23 +1017,37 @@ namespace FarmerLibrary
                                              new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Feed.png"),
                                              new ProportionalRectangle(0.24, 0.64, 0.4, 0.72)));
             Clickables.Add(ToolMenu);
+
+            HarvestHouse = new HarvestButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
+            Clickables.Add(HarvestHouse);
         }
 
         public override void HandleMouseMove(double x, double y, GameState state)
         {
             base.HandleMouseMove(x, y, state);
 
-            CursorHandler.UpdatePosition(x, y);
+            CursorHandler.UpdatePosition(x, y); // TODO move cursor handling to base class
+        }
+
+        public override void HandleClick(double X, double Y, GameState state)
+        {
+            base.HandleClick(X, Y, state);
+
+            foreach(var spot in EggSpots)
+            {
+                spot.Click(X, Y, state);
+            }
         }
 
         public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             base.Draw(g, state, absoluteWidth, absoluteHeight);
 
-            // Initialize new chicken positions if needed
+            // Initialize new chicken and egg positions if needed
             for  (int i = ChickenPositions.Count; i < state.CurrentCoop.ChickenCount; i++)
             {
                 ChickenPositions.Add(GetNewChickenPosition());
+                EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewEggPosition(), state.CurrentCoop.GetEggSpots()[i]));
             }
 
             // Draw chicken
@@ -1003,11 +1057,9 @@ namespace FarmerLibrary
             }
 
             // Draw eggs
-            // TODO egg buttons
-            for (int i = 0; i < state.CurrentCoop.GetEggSpots().Count; i++)
+            foreach(var spot in EggSpots)
             {
-                if (state.CurrentCoop.GetEggSpots()[i].HasEgg())
-                    g.DrawImage(EggAssets.GetImage(typeof(Egg)), ChickenPositions[i].GetAbsolute(absoluteWidth, absoluteHeight));
+                spot.Draw(g, state, absoluteWidth, absoluteHeight);
             }
 
             // Draw cursor
@@ -1015,6 +1067,16 @@ namespace FarmerLibrary
         }
 
         private ProportionalRectangle GetNewChickenPosition()
+        {
+            var x1 = rnd.NextDouble() * 0.79;
+            var x2 = x1 + 0.11;
+            var y1 = 1 - rnd.NextDouble() * 0.3 - 0.2;
+            var y2 = y1 + 0.2;
+
+            return new ProportionalRectangle(x1, x2, y1, y2);
+        }
+
+        private ProportionalRectangle GetNewEggPosition()
         {
             var x1 = rnd.NextDouble() * 0.89;
             var x2 = x1 + 0.11;
@@ -1025,6 +1087,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class ShopSceneHandler : SceneHandler
     {
         private MenuHandler ShoppingMenu; // TODO implement
@@ -1046,6 +1109,7 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class HouseSceneHandler : SceneHandler
     {
 
@@ -1196,9 +1260,15 @@ namespace FarmerLibrary
 }
 
 // TODO plan:
-// finish egg collecting
 // do chicken shop
 // deal with text displays (amounts and prices)
 // saving
 // stamina
-// challenges
+// challenges & events
+// hover behavior
+// housekeeping (images, enable/disable of buttons, TODOs)
+// Testing chicken
+// Docs
+// Presentation
+// Possibly: More plants
+// Possibly: Extensible scene loaders
