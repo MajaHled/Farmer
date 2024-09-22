@@ -140,7 +140,6 @@ namespace FarmerLibrary
 
 
     #region clicking
-    
     public interface IClickable : IDrawable
     {
         public void Click(double x, double y, GameState state);
@@ -158,6 +157,12 @@ namespace FarmerLibrary
     {
         protected Bitmap Icon;
         protected ProportionalRectangle? Position;
+
+        // Highlight behavior
+        protected bool Highlighed = false;
+        protected readonly double HIGHLIGHT_MARGIN = 0.01;
+        public bool HighlightOn { get; set; } = true;
+
         public List<IClickable> ToEnable { get; init; }
         public List<IClickable> ToDisable { get; init; }
 
@@ -195,7 +200,15 @@ namespace FarmerLibrary
                 throw new InvalidOperationException("Cannot draw button with uninitialized position.");
 
             else if (Position is ProportionalRectangle p && Enabled)
-                g.DrawImage(Icon, p.GetAbsolute(width, height));
+            {
+                if (Highlighed && HighlightOn)
+                {
+                    var temp = new ProportionalRectangle(p.X1 - HIGHLIGHT_MARGIN, p.X2 + HIGHLIGHT_MARGIN, p.Y1 - HIGHLIGHT_MARGIN, p.Y2 + HIGHLIGHT_MARGIN);
+                    g.DrawImage(Icon, temp.GetAbsolute(width, height));
+                }
+                else
+                    g.DrawImage(Icon, p.GetAbsolute(width, height));
+            }
         }
 
         public void Click(double x, double y, GameState state)
@@ -219,7 +232,10 @@ namespace FarmerLibrary
 
         public void Hover(double x, double y, GameState state)
         {
-            // TODO button hover behavior
+            if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
+                Highlighed = true;
+            else
+                Highlighed = false;
         }
     }
 
@@ -308,10 +324,12 @@ namespace FarmerLibrary
         public PlantButton(Bitmap icon, ProportionalRectangle position, Seed toPlant) : base(icon, position)
         {
             ToPlant = toPlant;
+            HighlightOn = false;
         }
         public PlantButton(Bitmap icon, Seed toPlant) : base(icon)
         {
             ToPlant = toPlant;
+            HighlightOn = false;
         }
 
         protected override void Action(GameState state)
@@ -328,10 +346,12 @@ namespace FarmerLibrary
         public BuyButton(Bitmap icon, ProportionalRectangle position, IBuyable product) : base(icon, position)
         {
             Product = product;
+            HighlightOn = false;
         }
         public BuyButton(Bitmap icon, IBuyable product) : base(icon)
         {
             Product = product;
+            HighlightOn = false;
         }
 
         protected override void Action(GameState state)
@@ -359,6 +379,7 @@ namespace FarmerLibrary
         public EggButton(Bitmap icon, ProportionalRectangle position, EggSpot spot) : base(icon, position)
         {
             Spot = spot;
+            HighlightOn = false;
         }
 
         public new void Draw(Graphics g, GameState state, int width, int height)
@@ -378,7 +399,6 @@ namespace FarmerLibrary
     }
     #endregion
 
-    
     
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MenuHandler : IClickable
@@ -811,6 +831,10 @@ namespace FarmerLibrary
     {
         private List<ProportionalRectangle> farmCoords;
 
+        private SceneSwitchButton ArrowButton;
+        private SceneSwitchButton HouseButton;
+        private SceneSwitchButton CoopButton;
+
         public MainSceneHandler()
         {
             // Load assets
@@ -827,12 +851,17 @@ namespace FarmerLibrary
             farmCoords.Add(new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[2], YBounds[3]));
             farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]));
 
-            var btn = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView);
-            btn.EnableStamina();
-            Clickables.Add(btn);
+            ArrowButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView);
+            ArrowButton.EnableStamina();
+            Clickables.Add(ArrowButton);
 
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.352), View.CoopView));
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.352), View.HouseView));
+            HouseButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.352), View.CoopView);
+            HouseButton.HighlightOn = false;
+            Clickables.Add(HouseButton);
+
+            CoopButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.352), View.HouseView);
+            CoopButton.HighlightOn = false;
+            Clickables.Add(CoopButton);
 
         }
 
@@ -1022,13 +1051,19 @@ namespace FarmerLibrary
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class RoadSceneHandler : SceneHandler
     {
+        private SceneSwitchButton SeedShop, ChickShop;
         public RoadSceneHandler()
         {
             // Load assets
             Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shops-background.png");
 
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.06, 0.37, 0.09, 0.79), View.SeedShopView));
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.63, 0.94, 0.09, 0.79), View.ChickShopView));
+            SeedShop = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.06, 0.37, 0.09, 0.79), View.SeedShopView);
+            SeedShop.HighlightOn = false;
+            ChickShop = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.63, 0.94, 0.09, 0.79), View.ChickShopView);
+            ChickShop.HighlightOn = false;
+
+            Clickables.Add(SeedShop);
+            Clickables.Add(ChickShop);
             Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), View.FullView));
         }
     }
@@ -1307,9 +1342,10 @@ namespace FarmerLibrary
 // deal with text displays (amounts and prices)
 // saving
 // challenges & events
-// hover behavior
 // housekeeping (images, enable/disable of buttons, restructure, TODOs)
 // Testing chicken
+// Sort chickens
+// Exit button
 // Docs
 // Presentation
 // Possibly: More plants
