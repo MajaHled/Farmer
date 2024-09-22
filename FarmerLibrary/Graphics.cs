@@ -1012,13 +1012,6 @@ namespace FarmerLibrary
         // Custom override due to needing to draw background over the plots
         public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
-            // Draw plots
-            Farm.Draw(g, state, absoluteWidth, absoluteHeight); //TODO maybe redo dimentions to not be whole screen
-
-            // TODO maybe we could just do a base call here lmao???
-            // Draw grass background
-            g.DrawImage(Background, 0, 0, absoluteWidth, absoluteHeight);
-
             // Handle control visibility
             if (!state.CurrentFarm.Planted)
                 PlantMenuButton.Enable();
@@ -1027,6 +1020,23 @@ namespace FarmerLibrary
                 PlantMenuButton.Disable();
                 PlantMenu.Disable();
             }
+
+            if (state.HeldProduct is Fruit)
+            {
+                PlantMenuButton.Disable();
+                HarvestButton.Enable();
+            }
+            else
+                HarvestButton.Disable();
+
+            // Draw plots
+            Farm.Draw(g, state, absoluteWidth, absoluteHeight); //TODO maybe redo dimentions to not be whole screen
+
+            // TODO maybe we could just do a base call here lmao???
+            // Draw grass background
+            g.DrawImage(Background, 0, 0, absoluteWidth, absoluteHeight);
+
+            
 
             // Draw controls
             DrawClickables(state, g, absoluteWidth, absoluteHeight);
@@ -1122,6 +1132,12 @@ namespace FarmerLibrary
 
         public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
+            // Determine harvest house visibility
+            if (state.HeldProduct is Egg)
+                HarvestHouse.Enable();
+            else
+                HarvestHouse.Disable();
+
             base.Draw(g, state, absoluteWidth, absoluteHeight);
 
             // Initialize new chicken and egg positions if needed
