@@ -334,7 +334,7 @@ namespace FarmerLibrary
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-    public sealed class EggButton : GameButton
+    public sealed class EggButton : GameButton, IClickable // Reimplement to get the new Draw() method
     {
         private EggSpot Spot;
 
@@ -382,6 +382,7 @@ namespace FarmerLibrary
             Buttons.Add(button);
         }
 
+        // TODO do better, maybe just stretch to max or something, this is real difficult to use
         public void RepositionButtons(double width, double height, double gap, double edgeGap)
         {
             var startX = BackgroundPosition.X1 + edgeGap;
@@ -706,15 +707,26 @@ namespace FarmerLibrary
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public abstract class SceneHandler : IDrawable
     {
-        protected List<IClickable> Clickables = [];
+        // Background that is drawn first
         protected Bitmap? Background { get; init; }
+
+        // All controls that are displayed by the base class behavior
+        protected List<IClickable> Clickables = [];
+        
+        // Cursor
+        protected CursorHandler Cursor = new();
 
         public virtual void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
+            // Background
             if (Background is Bitmap b)
                 g.DrawImage(b, 0, 0, absoluteWidth, absoluteHeight);
 
+            // Controls
             DrawClickables(state, g, absoluteWidth, absoluteHeight);
+
+            // Cursor
+            Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
         protected void DrawClickables(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
@@ -723,20 +735,22 @@ namespace FarmerLibrary
                 clickable.Draw(g, state, absolueWidth, absoluteHeight);
         }
 
-        public virtual void HandleClick(double X, double Y, GameState state)
+        public virtual void HandleClick(double x, double y, GameState state)
         {
             foreach(IClickable clickable in Clickables)
             {
-                clickable.Click(X, Y, state);
+                clickable.Click(x, y, state);
             }
         }
 
-        public virtual void HandleMouseMove(double X, double Y, GameState state)
+        public virtual void HandleMouseMove(double x, double y, GameState state)
         {
             foreach (IClickable clickable in Clickables)
             {
-                clickable.Hover(X, Y, state);
+                clickable.Hover(x, y, state);
             }
+
+            Cursor.UpdatePosition(x, y);
         }
     }
 
@@ -809,9 +823,6 @@ namespace FarmerLibrary
         private GameButton HarvestButton;
         private GameButton BackButton;
 
-        // Cursor
-        private CursorHandler CursorHandler = new();
-
         public FarmSceneHandler()
         {
             // Load assets:
@@ -861,8 +872,8 @@ namespace FarmerLibrary
             );
 
             // Initialize cursor handler with icons
-            CursorHandler.SetToolIcons(ToolIconLoader);
-            CursorHandler.SetSellableIcons(FruitAssets);
+            Cursor.SetToolIcons(ToolIconLoader);
+            Cursor.SetSellableIcons(FruitAssets);
 
             // Initialize menus:
             // Toolbar
@@ -920,6 +931,7 @@ namespace FarmerLibrary
             // Draw plots
             Farm.Draw(g, state, absoluteWidth, absoluteHeight); //TODO maybe redo dimentions to not be whole screen
 
+            // TODO maybe we could just do a base call here lmao???
             // Draw grass background
             g.DrawImage(Background, 0, 0, absoluteWidth, absoluteHeight);
 
@@ -936,7 +948,7 @@ namespace FarmerLibrary
             DrawClickables(state, g, absoluteWidth, absoluteHeight);
 
             // Draw cursor
-            CursorHandler.Draw(g, state, absoluteWidth, absoluteHeight);
+            Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
         public override void HandleClick(double x, double y, GameState state)
@@ -947,9 +959,8 @@ namespace FarmerLibrary
 
         public override void HandleMouseMove(double x, double y, GameState state)
         {
+            base.HandleMouseMove(x, y, state);
             Farm.Hover(x, y, state);
-
-            CursorHandler.UpdatePosition(x, y);
         }
     }
 
@@ -983,9 +994,6 @@ namespace FarmerLibrary
         private MenuHandler ToolMenu;
         private HarvestButton HarvestHouse;
 
-        // Cursor
-        private CursorHandler CursorHandler = new();
-
         Random rnd = new();
 
         public CoopSceneHandler()
@@ -1001,8 +1009,8 @@ namespace FarmerLibrary
             Chicken = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Chicken.png");
 
             // Initialize cursor handler with icons
-            CursorHandler.SetToolIcons(ToolIconLoader);
-            CursorHandler.SetSellableIcons(EggAssets);
+            Cursor.SetToolIcons(ToolIconLoader);
+            Cursor.SetSellableIcons(EggAssets);
 
             // Menu
             ToolMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-menu.png"), new ProportionalRectangle(0.32, 0.59, 0.11, 0.27));
@@ -1022,23 +1030,6 @@ namespace FarmerLibrary
             Clickables.Add(HarvestHouse);
         }
 
-        public override void HandleMouseMove(double x, double y, GameState state)
-        {
-            base.HandleMouseMove(x, y, state);
-
-            CursorHandler.UpdatePosition(x, y); // TODO move cursor handling to base class
-        }
-
-        public override void HandleClick(double X, double Y, GameState state)
-        {
-            base.HandleClick(X, Y, state);
-
-            foreach(var spot in EggSpots)
-            {
-                spot.Click(X, Y, state);
-            }
-        }
-
         public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             base.Draw(g, state, absoluteWidth, absoluteHeight);
@@ -1046,8 +1037,9 @@ namespace FarmerLibrary
             // Initialize new chicken and egg positions if needed
             for  (int i = ChickenPositions.Count; i < state.CurrentCoop.ChickenCount; i++)
             {
-                ChickenPositions.Add(GetNewChickenPosition());
-                EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewEggPosition(), state.CurrentCoop.GetEggSpots()[i]));
+                ChickenPositions.Add(GetNewPosition());
+                EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewPosition(), state.CurrentCoop.GetEggSpots()[i]));
+                Clickables.Add(EggSpots[i]);
             }
 
             // Draw chicken
@@ -1056,29 +1048,14 @@ namespace FarmerLibrary
                 g.DrawImage(Chicken, ChickenPositions[i].GetAbsolute(absoluteWidth, absoluteHeight));
             }
 
-            // Draw eggs
-            foreach(var spot in EggSpots)
-            {
-                spot.Draw(g, state, absoluteWidth, absoluteHeight);
-            }
+            // Reraw cursor so that it is drawn over the chickens
+            Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
 
-            // Draw cursor
-            CursorHandler.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
-        private ProportionalRectangle GetNewChickenPosition()
+        private ProportionalRectangle GetNewPosition()
         {
             var x1 = rnd.NextDouble() * 0.79;
-            var x2 = x1 + 0.11;
-            var y1 = 1 - rnd.NextDouble() * 0.3 - 0.2;
-            var y2 = y1 + 0.2;
-
-            return new ProportionalRectangle(x1, x2, y1, y2);
-        }
-
-        private ProportionalRectangle GetNewEggPosition()
-        {
-            var x1 = rnd.NextDouble() * 0.89;
             var x2 = x1 + 0.11;
             var y1 = 1 - rnd.NextDouble() * 0.3 - 0.2;
             var y2 = y1 + 0.2;
@@ -1090,7 +1067,7 @@ namespace FarmerLibrary
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class ShopSceneHandler : SceneHandler
     {
-        private MenuHandler ShoppingMenu; // TODO implement
+        private MenuHandler ShoppingMenu;
 
         public ShopSceneHandler()
         {
@@ -1155,6 +1132,9 @@ namespace FarmerLibrary
             SeedShopScene.AddStock(new CarrotSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Carrot.png"));
             SeedShopScene.AddStock(new PotatoSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Potato.png"));
             SeedShopScene.AddStock(new TomatoSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Tomato.png"));
+
+            ChickShopScene.AddStock(new Chicken(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Chicken.png"));
+            //ChickShopScene.AddStock(new Bag(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
 
             MoneyDisplay = new MoneyDisplay(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.02, 0.13));
         }
@@ -1266,7 +1246,8 @@ namespace FarmerLibrary
 // stamina
 // challenges & events
 // hover behavior
-// housekeeping (images, enable/disable of buttons, TODOs)
+// housekeeping (images, enable/disable of buttons, restructure, TODOs)
+// Edgecase of planting into watered plot!!!
 // Testing chicken
 // Docs
 // Presentation

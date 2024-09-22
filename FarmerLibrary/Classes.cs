@@ -120,11 +120,12 @@
             if (product.BuyPrice > PlayerMoney)
                 return false;
 
-            if (product is Chicken)
+            if (product is Chicken c)
             {
                 // Can we buy more chickens?
                 if (CurrentCoop.ChickenCount >= CurrentCoop.Capacity)
                     return false;
+                CurrentCoop.AddChicken(c);
             }
 
             // Add product to player's inventory
