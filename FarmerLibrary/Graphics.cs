@@ -606,7 +606,6 @@ namespace FarmerLibrary
                 {
                     if (plotCoords[i, j].InArea(x, y))
                     {
-                        // TODO disable toolbar when harvesting somewhere
                         if (state.CurrentTool is Tool t && state.HeldProduct is null)
                             t.Use(state, state.CurrentFarm[i, j]);
                         break;
@@ -787,17 +786,29 @@ namespace FarmerLibrary
     {
         private Bitmap Background;
         private ProportionalRectangle Position;
+        private static StringFormat Format = new StringFormat();
 
         public MoneyDisplay(Bitmap background, ProportionalRectangle position)
         {
             Background = background;
             Position = position;
+
+            Format.LineAlignment = StringAlignment.Center;
+            Format.Alignment = StringAlignment.Center;
         }
 
         public void Draw(Graphics g, GameState state, int width, int height)
         {
             g.DrawImage(Background, Position.GetAbsolute(width, height));
-            g.DrawString(state.PlayerMoney.ToString() + "$", new Font("Arial", 16), new SolidBrush(Color.Black), Position.GetAbsolute(width, height));
+
+            // Build string
+            string text = "$" + state.PlayerMoney.ToString();
+            if (state.PlayerMoney >= 1_000_000)
+                text = "$" + (state.PlayerMoney / 1000000).ToString() + "M";
+            else if (state.PlayerMoney >= 10_000)
+                text = "$" + (state.PlayerMoney/1000).ToString() + "k";
+
+            g.DrawString(text, new Font("Arial", 16), new SolidBrush(Color.Black), Position.GetAbsolute(width, height), Format);
         }
     }
 
@@ -993,6 +1004,7 @@ namespace FarmerLibrary
             FruitAssets.Add(typeof(CarrotFruit), new Bitmap("Assets\\Carrot.png"));
             FruitAssets.Add(typeof(PotatoFruit), new Bitmap("Assets\\Potato.png"));
             FruitAssets.Add(typeof(TomatoFruit), new Bitmap("Assets\\Tomato.png"));
+            FruitAssets.Add(typeof(MelonFruit), new Bitmap("Assets\\Melon.png"));
 
             // Plant assets
             PlantAssets.Load(typeof(RaddishPlant),
@@ -1023,6 +1035,13 @@ namespace FarmerLibrary
                 "Assets\\Adult-tomato.png",
                 "Assets\\Fruiting-tomato.png"
             );
+            PlantAssets.Load(typeof(MelonPlant),
+                "Assets\\Seed-support.png",
+                "Assets\\Small-seedling-support.png",
+                "Assets\\Big-seedling-support.png",
+                "Assets\\Adult-melon.png",
+                "Assets\\Fruiting-melon.png"
+            );
 
             // Initialize cursor handler with icons
             Cursor.SetToolIcons(ToolIconLoader);
@@ -1049,6 +1068,7 @@ namespace FarmerLibrary
             PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(CarrotFruit)), new CarrotSeed()));
             PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(TomatoFruit)), new TomatoSeed()));
             PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(PotatoFruit)), new PotatoSeed()));
+            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(MelonFruit)), new MelonSeed()));
 
             PlantMenu.RepositionButtons(0.10, 0.18, 0.03, 0.07);
             PlantMenu.Disable();
@@ -1332,6 +1352,7 @@ namespace FarmerLibrary
             SeedShopScene.AddStock(new CarrotSeed(), new Bitmap("Assets\\Carrot.png"));
             SeedShopScene.AddStock(new PotatoSeed(), new Bitmap("Assets\\Potato.png"));
             SeedShopScene.AddStock(new TomatoSeed(), new Bitmap("Assets\\Tomato.png"));
+            SeedShopScene.AddStock(new MelonSeed(), new Bitmap("Assets\\Melon.png"));
 
             ChickShopScene.AddStock(new Chicken(), new Bitmap("Assets\\Chicken.png"));
             //ChickShopScene.AddStock(new Bag(), new Bitmap("Assets\\Bag.png"));
@@ -1457,7 +1478,7 @@ namespace FarmerLibrary
 }
 
 // TODO plan:
-// do chicken shop
+// do chicken and tools in shop
 // deal with text displays (amounts and prices)
 // saving
 // challenges & events
@@ -1465,5 +1486,6 @@ namespace FarmerLibrary
 // Testing chicken
 // Docs
 // Presentation
-// Possibly: More plants
-// Possibly: Extensible scene loaders
+// Maybe: new plants
+// Exit plant menu
+// Plant menu breaks when no seeds

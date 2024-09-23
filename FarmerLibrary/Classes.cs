@@ -480,6 +480,14 @@
         protected override int TimesHarvestable => 3;
         protected override Fruit CreateFruit() => new TomatoFruit();
     }
+
+    public sealed class MelonPlant : Plant
+    {
+        public MelonPlant(Plot plot) : base(plot) { }
+        protected override int DaysToGrow => 6;
+        protected override int TimesHarvestable => 3;
+        protected override Fruit CreateFruit() => new MelonFruit();
+    }
     #endregion
 
     public abstract class Fruit : ISellable
@@ -504,6 +512,10 @@
     public sealed class TomatoFruit : Fruit
     {
         public override uint SellPrice => 150;
+    }
+    public sealed class MelonFruit : Fruit
+    {
+        public override uint SellPrice => 500;
     }
     #endregion  
 
@@ -536,6 +548,11 @@
     {
         public override uint BuyPrice => 500;
         public override Plant PlantToPlot(Plot plot) => new TomatoPlant(plot);
+    }
+    public sealed class MelonSeed : Seed
+    {
+        public override uint BuyPrice => 900;
+        public override Plant PlantToPlot(Plot plot) => new MelonPlant(plot);
     }
 
     #endregion
