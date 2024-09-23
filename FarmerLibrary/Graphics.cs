@@ -844,6 +844,9 @@ namespace FarmerLibrary
         // Cursor
         protected CursorHandler Cursor = new();
 
+        // Things to display on top of everything
+        protected List<IDrawable> topIcons = [];
+
         public virtual void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             // Background
@@ -851,16 +854,30 @@ namespace FarmerLibrary
                 g.DrawImage(b, 0, 0, absoluteWidth, absoluteHeight);
 
             // Controls
-            DrawClickables(state, g, absoluteWidth, absoluteHeight);
+            DrawClickables(g, state, absoluteWidth, absoluteHeight);
 
             // Cursor
             Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
+
+            // Top icons
+            DrawTopIcons(g, state, absoluteWidth, absoluteHeight);
         }
 
-        protected void DrawClickables(GameState state, Graphics g, int absolueWidth, int absoluteHeight)
+        public void AddTopIcon(IDrawable icon)
+        {
+            topIcons.Add(icon);
+        }
+
+        protected void DrawClickables(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
         {
             foreach (IClickable clickable in Clickables)
                 clickable.Draw(g, state, absolueWidth, absoluteHeight);
+        }
+
+        protected void DrawTopIcons(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
+        {
+            foreach (IDrawable item in topIcons)
+                item.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
         public virtual void HandleClick(double x, double y, GameState state)
@@ -936,11 +953,6 @@ namespace FarmerLibrary
                     break;
                 }
             }
-        }
-
-        public override void HandleMouseMove(double X, double Y, GameState state)
-        {
-            base.HandleMouseMove(X, Y, state); //TODO redo base calls as public wrappers in parent class with protected utility methods
         }
     }
 
@@ -1098,19 +1110,10 @@ namespace FarmerLibrary
                 HarvestButton.Disable();
 
             // Draw plots
-            Farm.Draw(g, state, absoluteWidth, absoluteHeight); //TODO maybe redo dimentions to not be whole screen
+            Farm.Draw(g, state, absoluteWidth, absoluteHeight);
 
-            // TODO maybe we could just do a base call here lmao???
-            // Draw grass background
-            g.DrawImage(Background, 0, 0, absoluteWidth, absoluteHeight);
+            base.Draw(g, state, absoluteWidth, absoluteHeight);
 
-            
-
-            // Draw controls
-            DrawClickables(state, g, absoluteWidth, absoluteHeight);
-
-            // Draw cursor
-            Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
         public override void HandleClick(double x, double y, GameState state)
@@ -1339,6 +1342,20 @@ namespace FarmerLibrary
                                          new Bitmap("Assets\\Stamina-level.png"),
                                          new Bitmap("Assets\\Stamina-empty.png"),
                                          new Bitmap("Assets\\Stamina-top.png"));
+
+            // Add icons to scenes
+            MainScene.AddTopIcon(Money);
+            MainScene.AddTopIcon(Stamina);
+            FarmScene.AddTopIcon(Money);
+            FarmScene.AddTopIcon(Stamina);
+            HouseScene.AddTopIcon(Money);
+            HouseScene.AddTopIcon(Stamina);
+            RoadScene.AddTopIcon(Money);
+            RoadScene.AddTopIcon(Stamina);
+            CoopScene.AddTopIcon(Money);
+            CoopScene.AddTopIcon(Stamina);
+            ChickShopScene.AddTopIcon(Money);
+            SeedShopScene.AddTopIcon(Money);
         }
 
         public void Paint(Graphics g)
@@ -1369,9 +1386,6 @@ namespace FarmerLibrary
                 default:
                     break;
             }
-
-            Money.Draw(g, gameState, width, height);
-            Stamina.Draw(g, gameState, width, height);
         }
 
         public void HandleClick(int X, int Y)
@@ -1447,9 +1461,8 @@ namespace FarmerLibrary
 // deal with text displays (amounts and prices)
 // saving
 // challenges & events
-// housekeeping (images, restructure, TODOs)
+// housekeeping (restructure, TODOs)
 // Testing chicken
-// Add displays to scene handlers
 // Docs
 // Presentation
 // Possibly: More plants
