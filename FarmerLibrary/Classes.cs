@@ -8,12 +8,15 @@ namespace FarmerLibrary
     {
         private List<DayEvent> events = new List<DayEvent>();
 
-        public void TryEvents(GameState state)
+        public List<DayEvent> TryEvents(GameState state)
         {
+            var done = new List<DayEvent>();
             foreach (DayEvent e in events)
             {
-                e.TryEvent(state);
+                if (e.TryEvent(state))
+                    done.Add(e);
             }
+            return done;
         }
 
         public void AddEvent(DayEvent e) => events.Add(e);
@@ -29,10 +32,14 @@ namespace FarmerLibrary
             Chance = chance; 
         }
 
-        public void TryEvent(GameState state)
+        public bool TryEvent(GameState state)
         {
             if (rnd.NextDouble() < Chance)
+            {
                 StartEvent(state);
+                return true;
+            }
+            return false;
         }
 
         protected abstract void StartEvent(GameState state);
@@ -272,6 +279,7 @@ namespace FarmerLibrary
         
         // Events
         private DayEventHandler eventHandler = new();
+        public List<DayEvent> TodaysEvents { get; private set; } = [];
 
         public void ResetTemps()
         {
@@ -305,8 +313,8 @@ namespace FarmerLibrary
 
             STAMINA_STEP = 1 / (double) actionsPerDay;
 
-            eventHandler.AddEvent(new RainEvent(eventChance));
             eventHandler.AddEvent(new WormEvent(eventChance, 0.5));
+            eventHandler.AddEvent(new RainEvent(eventChance));
         }
 
         public void EndDay()
@@ -319,7 +327,7 @@ namespace FarmerLibrary
 
             Stamina = 1;
 
-            eventHandler.TryEvents(this);
+            TodaysEvents = eventHandler.TryEvents(this);
         }
 
         public static GameState GetClassicStartingState()

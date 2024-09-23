@@ -892,6 +892,28 @@ namespace FarmerLibrary
         }
     }
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class EventDisplay : IDrawable
+    {
+        private Dictionary<Type, Bitmap> Visuals = [];
+
+        public void RegisterEvent(Type eventType, Bitmap visual)
+        {
+            if (!typeof(DayEvent).IsAssignableFrom(eventType))
+                throw new ArgumentException($"Can't register non-event type {eventType}.");
+            if (Visuals.ContainsKey(eventType))
+                Visuals[eventType] = visual;
+            else
+                Visuals.Add(eventType, visual);
+        }
+
+        public void Draw(Graphics g, GameState state, int width, int height)
+        {
+            foreach (var e in state.TodaysEvents)
+                if (Visuals.ContainsKey(e.GetType()))
+                    g.DrawImage(Visuals[e.GetType()], 0, 0, width, height);
+        }
+    }
 
 
     #region scene handlers
@@ -903,7 +925,10 @@ namespace FarmerLibrary
 
         // All controls that are displayed by the base class behavior
         protected List<IClickable> Clickables = [];
-        
+
+        // Event viualizer
+        protected EventDisplay? EventDisplay;
+
         // Cursor
         protected CursorHandler Cursor = new();
 
@@ -919,6 +944,9 @@ namespace FarmerLibrary
             // Controls
             DrawClickables(g, state, absoluteWidth, absoluteHeight);
 
+            // Event
+            EventDisplay?.Draw(g, state, absoluteWidth, absoluteHeight);
+
             // Cursor
             Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
 
@@ -930,6 +958,8 @@ namespace FarmerLibrary
         {
             topIcons.Add(icon);
         }
+
+        public void SetEventDisplay(EventDisplay eventDisplay) => EventDisplay = eventDisplay;
 
         protected void DrawClickables(Graphics g, GameState state, int absolueWidth, int absoluteHeight)
         {
@@ -1393,6 +1423,7 @@ namespace FarmerLibrary
 
         private MoneyDisplay Money;
         private StaminaDisplay Stamina;
+        private EventDisplay EventDisplay;
 
         public int width, height;
         // TODO better access
@@ -1421,7 +1452,7 @@ namespace FarmerLibrary
                                          new Bitmap("Assets\\Stamina-empty.png"),
                                          new Bitmap("Assets\\Stamina-top.png"));
 
-            // Add icons to scenes
+            // Add top icons to appropriate scenes
             MainScene.AddTopIcon(Money);
             MainScene.AddTopIcon(Stamina);
             FarmScene.AddTopIcon(Money);
@@ -1434,6 +1465,13 @@ namespace FarmerLibrary
             CoopScene.AddTopIcon(Stamina);
             ChickShopScene.AddTopIcon(Money);
             SeedShopScene.AddTopIcon(Money);
+
+            EventDisplay = new();
+            EventDisplay.RegisterEvent(typeof(WormEvent), new Bitmap("Assets//Worms.png"));
+            EventDisplay.RegisterEvent(typeof(RainEvent), new Bitmap("Assets//Rain.png"));
+            // Add event display to appropriate scenes
+            MainScene.SetEventDisplay(EventDisplay);
+            FarmScene.SetEventDisplay(EventDisplay);
         }
 
         public void Paint(Graphics g)
@@ -1545,3 +1583,4 @@ namespace FarmerLibrary
 // Docs
 // Presentation
 // Maybe: new plants
+// Maybe load all the assets into one big loader and load by name
