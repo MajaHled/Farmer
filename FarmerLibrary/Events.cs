@@ -50,7 +50,7 @@
         protected override void StartEvent(GameState state)
         {
             foreach (Farm farm in state.GetFarmList())
-                for (int i = 0; i < farm.Rows * farm.Cols; i++) // TODO enumerable
+                for (int i = 0; i < farm.Rows * farm.Cols; i++)
                     farm[i].Water();
         }
     }
@@ -66,7 +66,7 @@
         protected override void StartEvent(GameState state)
         {
             foreach (Farm farm in state.GetFarmList())
-                for (int i = 0; i < farm.Rows * farm.Cols; i++) // TODO enumerable
+                for (int i = 0; i < farm.Rows * farm.Cols; i++)
                     if (rnd.NextDouble() < WormChance)
                         farm[i].GiveBug();
         }

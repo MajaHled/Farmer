@@ -252,7 +252,6 @@ namespace FarmerLibrary
         public abstract uint SellPrice { get; }
     }
 
-    //TODO proper selling prices
     #region Fruit classes  
     public sealed class RaddishFruit : Fruit
     {

@@ -47,16 +47,15 @@ namespace FarmerGraphics
         private StaminaDisplay Stamina;
         private EventDisplay EventDisplay;
 
-        public int width { get; set; }
-        public int height { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
 
-        public FarmerGraphics(GameState gameState)
+        public FarmerGraphics(GameState gameState, int startWidth, int startHeight)
         {
             this.gameState = gameState;
 
-            width = 960;
-            height = 540;
-            //TODO better resize handling
+            Width = startWidth;
+            Height = startHeight;
 
             SeedShopScene.AddStock(new RaddishSeed(), new Bitmap("Assets\\Raddish.png"));
             SeedShopScene.AddStock(new CarrotSeed(), new Bitmap("Assets\\Carrot.png"));
@@ -102,25 +101,25 @@ namespace FarmerGraphics
             switch (gameState.CurrentView)
             {
                 case FarmerLibrary.View.FullView:
-                    MainScene.Draw(g, gameState, width, height);
+                    MainScene.Draw(g, gameState, Width, Height);
                     break;
                 case FarmerLibrary.View.FarmView:
-                    FarmScene.Draw(g, gameState, width, height);
+                    FarmScene.Draw(g, gameState, Width, Height);
                     break;
                 case FarmerLibrary.View.CoopView:
-                    CoopScene.Draw(g, gameState, width, height);
+                    CoopScene.Draw(g, gameState, Width, Height);
                     break;
                 case FarmerLibrary.View.HouseView:
-                    HouseScene.Draw(g, gameState, width, height);
+                    HouseScene.Draw(g, gameState, Width, Height);
                     break;
                 case FarmerLibrary.View.RoadView:
-                    RoadScene.Draw(g, gameState, width, height);
+                    RoadScene.Draw(g, gameState, Width, Height);
                     break;
                 case FarmerLibrary.View.SeedShopView:
-                    SeedShopScene.Draw(g, gameState, width, height);
+                    SeedShopScene.Draw(g, gameState, Width, Height);
                     break;
                 case FarmerLibrary.View.ChickShopView:
-                    ChickShopScene.Draw(g, gameState, width, height);
+                    ChickShopScene.Draw(g, gameState, Width, Height);
                     break;
                 default:
                     break;
@@ -129,8 +128,8 @@ namespace FarmerGraphics
 
         public void HandleClick(int X, int Y)
         {
-            double XProportional = (double)X / width;
-            double YProportional = (double)Y / height;
+            double XProportional = (double)X / Width;
+            double YProportional = (double)Y / Height;
 
             switch (gameState.CurrentView)
             {
@@ -162,8 +161,8 @@ namespace FarmerGraphics
 
         public void HandleMouseMove(int X, int Y)
         {
-            double XProportional = (double)X / width;
-            double YProportional = (double)Y / height;
+            double XProportional = (double)X / Width;
+            double YProportional = (double)Y / Height;
 
             switch (gameState.CurrentView)
             {
@@ -196,7 +195,6 @@ namespace FarmerGraphics
 }
 
 // TODO plan:
-// do chicken and tools in shop
 // Days display
 // unset text displays
 // saving

@@ -53,7 +53,6 @@
             Name = "Farmer";
             Text = "Form1";
             Load += Form1_Load;
-            Resize += Farmer_Resize;
             ResumeLayout(false);
         }
 

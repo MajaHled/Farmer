@@ -58,6 +58,8 @@
             // Take money
             PlayerMoney -= product.BuyPrice;
 
+            Points += ChallengeHandler.CheckChallenges(this);
+
             return true;
         }
         public int GetOwnedAmount(IBuyable product)
@@ -89,6 +91,7 @@
 
             PlayerMoney += HeldProduct.SellPrice;
             HeldProduct = null;
+            Points += ChallengeHandler.CheckChallenges(this);
             return true;
         }
 
@@ -99,8 +102,13 @@
         public bool CanWork() => Stamina >= STAMINA_STEP;
         
         // Events
-        private DayEventHandler eventHandler = new();
+        private DayEventHandler EventHandler = new();
         public List<DayEvent> TodaysEvents { get; private set; } = [];
+
+        // Challenges
+        private ChallengeHandler ChallengeHandler;
+        public List<Challenge> GetChallengeList() => new List<Challenge>(ChallengeHandler.GetChallengeList());
+        public int Points { get; private set; } = 0;
 
         public void ResetTemps()
         {
@@ -110,7 +118,7 @@
             CurrentCoopIndex = 0;
         }
 
-        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney, uint actionsPerDay, double eventChance)
+        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney, uint actionsPerDay, double eventChance, ChallengeHandler handler)
         {
             for (int i = 0; i < numFarms; i++)
             {
@@ -127,8 +135,10 @@
 
             STAMINA_STEP = 1 / (double) actionsPerDay;
 
-            eventHandler.AddEvent(new WormEvent(eventChance, 0.5));
-            eventHandler.AddEvent(new RainEvent(eventChance));
+            EventHandler.AddEvent(new WormEvent(eventChance, 0.5));
+            EventHandler.AddEvent(new RainEvent(eventChance));
+
+            ChallengeHandler = handler;
         }
 
         public void EndDay()
@@ -141,12 +151,14 @@
 
             Stamina = 1;
 
-            TodaysEvents = eventHandler.TryEvents(this);
+            TodaysEvents = EventHandler.TryEvents(this);
+
+            Points += ChallengeHandler.CheckChallenges(this);
         }
 
         public static GameState GetClassicStartingState()
         {
-            return new GameState(4, 3, 4, 1, 5, View.FullView, 1000, 160, 0.1);
+            return new GameState(4, 3, 4, 1, 5, View.FullView, 100, 160, 0.1, new DefaultChallengeHandler());
         }
     }
 

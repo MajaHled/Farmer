@@ -55,18 +55,17 @@ namespace FarmerGraphics
 
         public void Add(GameButton button) => Buttons.Add(button);
 
-        // TODO do better, maybe just stretch to max or something, this is real difficult to use
-        public void RepositionButtons(double width, double height, double gap, double edgeGap)
+        public void RepositionButtons(double width, double height, double gap, double padding)
         {
-            var startX = BackgroundPosition.X1 + edgeGap;
-            var startY = BackgroundPosition.Y1 + edgeGap;
+            var startX = BackgroundPosition.X1 + padding;
+            var startY = BackgroundPosition.Y1 + padding;
 
             // If requested width of buttons doesn't allow for even one column
-            if (startX + width + edgeGap > BackgroundPosition.X2)
+            if (startX + width + padding > BackgroundPosition.X2)
                 throw new ArgumentException("Buttons do not fit with specified proportions");
 
             // If requested height of buttons doesn't allow for even one line
-            if (startY + height + edgeGap > BackgroundPosition.Y2)
+            if (startY + height + padding > BackgroundPosition.Y2)
                 throw new ArgumentException("Buttons do not fit with specified proportions");
 
             foreach (GameButton button in Buttons)
@@ -77,14 +76,14 @@ namespace FarmerGraphics
                 button.SetPosition(new ProportionalRectangle(startX, startX + width, startY, startY + height));
                 startX += width + gap;
 
-                if (startX + width + edgeGap > BackgroundPosition.X2)
+                if (startX + width + padding > BackgroundPosition.X2)
                 {
                     // new line
                     startX = BackgroundPosition.X1 + gap;
                     startY += height + gap;
 
                     // If can't fit another line
-                    if (startY + height + edgeGap > BackgroundPosition.Y2)
+                    if (startY + height + padding > BackgroundPosition.Y2)
                         throw new ArgumentException("Buttons do not fit with specified proportions");
                 }
             }

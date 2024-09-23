@@ -19,7 +19,7 @@ namespace FarmerGraphics
             panel1.BackColor = Color.Red;
 
             gameState = GameState.GetClassicStartingState();
-            gameSceneHandler = new FarmerGraphics(gameState);
+            gameSceneHandler = new FarmerGraphics(gameState, 960, 540);
         }
 
         private GameState gameState;
@@ -44,15 +44,10 @@ namespace FarmerGraphics
             Refresh();
         }
 
-        private void Farmer_Resize(object sender, EventArgs e)
-        {
-            // TODO keep aspect ratio
-        }
-
         private void panel1_Resize(object sender, EventArgs e)
         {
-            gameSceneHandler.width = panel1.Width;
-            gameSceneHandler.height = panel1.Height;
+            gameSceneHandler.Width = panel1.Width;
+            gameSceneHandler.Height = panel1.Height;
             Refresh();
         }
     }
