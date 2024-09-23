@@ -61,7 +61,7 @@ namespace FarmerGraphics
             SeedShopScene.AddStock(new CarrotSeed(), new Bitmap("Assets\\Carrot.png"));
             SeedShopScene.AddStock(new PotatoSeed(), new Bitmap("Assets\\Potato.png"));
             SeedShopScene.AddStock(new TomatoSeed(), new Bitmap("Assets\\Tomato.png"));
-            SeedShopScene.AddStock(new MelonSeed(), new Bitmap("Assets\\Melon.png"));
+            //SeedShopScene.AddStock(new MelonSeed(), new Bitmap("Assets\\Melon.png"));
 
             ChickShopScene.AddStock(new Chicken(), new Bitmap("Assets\\Chicken.png"));
             //ChickShopScene.AddStock(new Bag(), new Bitmap("Assets\\Bag.png"));
@@ -195,12 +195,7 @@ namespace FarmerGraphics
 }
 
 // TODO plan:
-// Days display
-// unset text displays
-// saving
 // challenges
-// housekeeping (TODOs, menu display)
-// Testing chicken
+// housekeeping (TODOs)
 // Docs
 // Presentation
-// Maybe: new plants

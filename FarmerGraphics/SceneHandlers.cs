@@ -92,7 +92,6 @@ namespace FarmerGraphics
             Background = new Bitmap("Assets\\Farmer-even.png");
 
             // Initialize farm interaction areas
-            // TODO remake as clickables
             farmCoords = new List<ProportionalRectangle>();
             double[] XBounds = { 0.02, 0.45, 0.54, 0.98 };
             double[] YBounds = { 0.37, 0.66, 0.70, 0.98 };
@@ -120,7 +119,6 @@ namespace FarmerGraphics
         {
             base.HandleClick(X, Y, state);
 
-            // TODO redo farms as clickables
             // See if inside a farm
             for (uint i = 0; i < farmCoords.Count; i++)
             {
@@ -441,7 +439,6 @@ namespace FarmerGraphics
                 // Sort by Y position, so that higher chickens are further back
                 ChickenPositions.Sort(Comparer<ProportionalRectangle>.Create((p1, p2) => p1.Y1.CompareTo(p2.Y1)));
 
-                // TODO this might break when loading
                 EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewPosition(), state.CurrentCoop.GetEggSpots()[i]));
                 Clickables.Add(EggSpots[i]);
             }

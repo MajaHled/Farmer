@@ -67,13 +67,11 @@
             if (target is Plot plot)
             {
                 return plot.Fertilize();
-                // TODO subtract fertilizer
             }
 
             if (target is ChickenFeeder feeder)
             {
                 return feeder.AddFeed();
-                // TODO subtract feed
             }
 
             return false;
