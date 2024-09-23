@@ -145,6 +145,7 @@ namespace FarmerGraphics
         // Menus
         private ToolMenuHandler ToolMenu;
         private MenuHandler PlantMenu;
+        private ProductTextDisplay Text;
 
         private FarmDisplay Farm;
 
@@ -231,14 +232,16 @@ namespace FarmerGraphics
             ToolMenu.SetExitButton(ToolExitButton);
 
             // Planting menu
-            PlantMenu = new MenuHandler(new Bitmap("Assets\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
-            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(RaddishFruit)), new RaddishSeed()));
-            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(CarrotFruit)), new CarrotSeed()));
-            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(TomatoFruit)), new TomatoSeed()));
-            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(PotatoFruit)), new PotatoSeed()));
-            PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(MelonFruit)), new MelonSeed()));
+            Text = new ProductTextDisplay(new Bitmap("Assets\\Plant-text.png"), new ProportionalRectangle(0.22, 0.79, 0.71, 0.86));
+            Text.ShowPrice = false;
 
-            PlantMenu.RepositionButtons(0.10, 0.18, 0.03, 0.07);
+            PlantMenu = new MenuHandler(new Bitmap("Assets\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
+            AddSeed(FruitAssets.GetImage(typeof(RaddishFruit)), new RaddishSeed());
+            AddSeed(FruitAssets.GetImage(typeof(CarrotFruit)), new CarrotSeed());
+            AddSeed(FruitAssets.GetImage(typeof(TomatoFruit)), new TomatoSeed());
+            AddSeed(FruitAssets.GetImage(typeof(PotatoFruit)), new PotatoSeed());
+            AddSeed(FruitAssets.GetImage(typeof(MelonFruit)), new MelonSeed());
+            PlantMenu.SetTextDisplay(Text);
 
             // Initialize buttons:
             HarvestButton = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
@@ -246,8 +249,8 @@ namespace FarmerGraphics
             PlantMenuButton = new PlantMenuButton(new Bitmap("Assets\\Planting-plant.png"), new ProportionalRectangle(0.01, 0.20, 0.18, 0.44), PlantMenu);
             PlantMenuExitButton = new MenuExitButton(PlantMenu, new Bitmap("Assets\\Exit.png"), new ProportionalRectangle(0.82, 0.91, 0.1, 0.25));
             PlantMenu.SetExitButton(PlantMenuExitButton);
-            PlantMenu.Disable();
 
+            PlantMenu.Disable();
 
             Farm = new FarmDisplay(PlantAssets);
 
@@ -277,7 +280,6 @@ namespace FarmerGraphics
             Clickables.Add(PlantMenu);
             Clickables.Add(BackButton);
             Clickables.Add(ToolExitButton);
-            Clickables.Add(PlantMenuExitButton);
         }
 
         // Custom override due to needing to draw background over the plots
@@ -318,6 +320,14 @@ namespace FarmerGraphics
         {
             base.HandleMouseMove(x, y, state);
             Farm.Hover(x, y, state);
+        }
+
+        private void AddSeed(Bitmap icon, Seed seed)
+        {
+            PlantButton btn = new PlantButton(icon, seed);
+            btn.SetTextDisplay(Text);
+            PlantMenu.Add(btn);
+            PlantMenu.RepositionButtons(0.10, 0.18, 0.03, 0.07);
         }
     }
 
@@ -474,7 +484,7 @@ namespace FarmerGraphics
 
             Text = new ProductTextDisplay(new Bitmap("Assets\\Text-display.png"), new ProportionalRectangle(0.11, 0.65, 0.66, 0.8));
 
-            TopIcons.Add(Text);
+            ShoppingMenu.SetTextDisplay(Text);
         }
 
         public void AddStock(IBuyable item, Bitmap icon)

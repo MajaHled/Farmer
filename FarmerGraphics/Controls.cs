@@ -22,6 +22,8 @@ namespace FarmerGraphics
 
         private MenuExitButton? ExitButton;
 
+        private TextDisplay? Text;
+
         public bool Enabled { get; private set; }
 
         public MenuHandler(Bitmap background, ProportionalRectangle backgroundPosition)
@@ -33,6 +35,7 @@ namespace FarmerGraphics
         }
 
         public void SetExitButton(MenuExitButton button) => ExitButton = button;
+        public void SetTextDisplay(TextDisplay text) => Text = text;
 
         public void AddToEnable(IClickable clickable)
         {
@@ -94,6 +97,8 @@ namespace FarmerGraphics
 
             foreach (GameButton button in Buttons)
                 button.Click(x, y, state);
+
+            ExitButton?.Click(x, y, state);
         }
 
         public void Hover(double x, double y, GameState state)
@@ -103,6 +108,8 @@ namespace FarmerGraphics
 
             foreach (GameButton button in Buttons)
                 button.Hover(x, y, state);
+
+            ExitButton?.Hover(x, y, state);
         }
 
         public void Draw(Graphics g, GameState state, int width, int height)
@@ -113,6 +120,8 @@ namespace FarmerGraphics
             g.DrawImage(Background, BackgroundPosition.GetAbsolute(width, height));
             foreach (GameButton button in Buttons)
                 button.Draw(g, state, width, height);
+            Text?.Draw(g, state, width, height);
+            ExitButton?.Draw(g, state, width, height);
 
         }
 

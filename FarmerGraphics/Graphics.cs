@@ -197,7 +197,7 @@ namespace FarmerGraphics
 
 // TODO plan:
 // do chicken and tools in shop
-// deal with text displays (amounts)
+// unset text displays
 // saving
 // challenges
 // housekeeping (TODOs, menu display)

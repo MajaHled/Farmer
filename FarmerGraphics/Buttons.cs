@@ -183,6 +183,7 @@ namespace FarmerGraphics
     public sealed class PlantButton : GameButton
     {
         private Seed ToPlant;
+        public ProductTextDisplay? Display;
 
         public PlantButton(Bitmap icon, ProportionalRectangle position, Seed toPlant) : base(icon, position)
         {
@@ -195,9 +196,16 @@ namespace FarmerGraphics
             HighlightOn = false;
         }
 
+        public void SetTextDisplay(ProductTextDisplay display) => Display = display;
+
         protected override bool Action(GameState state)
         {
             return state.PlantSeedToCurrent(ToPlant);
+        }
+
+        protected override void HoverAction(GameState state)
+        {
+            Display?.SetProduct(ToPlant);
         }
     }
 
