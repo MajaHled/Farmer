@@ -200,7 +200,7 @@ namespace FarmerGraphics
 // deal with text displays (amounts)
 // saving
 // challenges
-// housekeeping (TODOs)
+// housekeeping (TODOs, menu display)
 // Testing chicken
 // Docs
 // Presentation

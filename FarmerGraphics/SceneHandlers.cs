@@ -338,6 +338,9 @@ namespace FarmerGraphics
             Clickables.Add(SeedShop);
             Clickables.Add(ChickShop);
             Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), FarmerLibrary.View.FullView));
+
+            TopIcons.Add(new BasicTextDisplay("Seed shop", new Bitmap("Assets\\Shop-sign.png"), new ProportionalRectangle(0.11, 0.32, 0.42, 0.55)));
+            TopIcons.Add(new BasicTextDisplay("Chicken shop", new Bitmap("Assets\\Shop-sign.png"), new ProportionalRectangle(0.68, 0.89, 0.42, 0.55)));
         }
     }
 
