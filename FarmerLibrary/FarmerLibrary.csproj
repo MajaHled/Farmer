@@ -213,6 +213,9 @@
     <None Update="Assets\Stamina-top.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Text-display.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Tomato.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

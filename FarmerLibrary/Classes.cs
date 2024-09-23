@@ -618,6 +618,7 @@ namespace FarmerLibrary
     {
         public abstract uint BuyPrice { get; }
         public abstract Plant PlantToPlot(Plot plot);
+        public abstract string Name { get; }
     }
 
     #region Seed classes   
@@ -625,29 +626,34 @@ namespace FarmerLibrary
     {
         public override uint BuyPrice => 100;
         public override Plant PlantToPlot(Plot plot) => new RaddishPlant(plot);
+        public override string Name => "Raddish";
     }
 
     public sealed class CarrotSeed : Seed
     {
         public override uint BuyPrice => 200;
         public override Plant PlantToPlot(Plot plot) => new CarrotPlant(plot);
+        public override string Name => "Carrot";
     }
 
     public sealed class PotatoSeed : Seed
     {
         public override uint BuyPrice => 300;
         public override Plant PlantToPlot(Plot plot) => new PotatoPlant(plot);
+        public override string Name => "Potato";
     }
 
     public sealed class TomatoSeed : Seed
     {
         public override uint BuyPrice => 500;
         public override Plant PlantToPlot(Plot plot) => new TomatoPlant(plot);
+        public override string Name => "Tomato";
     }
     public sealed class MelonSeed : Seed
     {
         public override uint BuyPrice => 900;
         public override Plant PlantToPlot(Plot plot) => new MelonPlant(plot);
+        public override string Name => "Melon";
     }
 
     #endregion
@@ -807,6 +813,7 @@ namespace FarmerLibrary
     {
         private bool fed = false;
         public uint BuyPrice => 1000;
+        public string Name => "Chicken";
 
         public bool Feed()
         {
@@ -880,6 +887,7 @@ namespace FarmerLibrary
     public interface IBuyable
     {
         uint BuyPrice { get; }
+        string Name { get; }
     }
 
     public interface IToolAcceptor { }

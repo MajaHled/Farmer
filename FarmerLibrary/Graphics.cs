@@ -236,10 +236,15 @@ namespace FarmerLibrary
         public void Hover(double x, double y, GameState state)
         {
             if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
+            {
                 Highlighed = true;
+                HoverAction(state);
+            }
             else
                 Highlighed = false;
         }
+
+        protected virtual void HoverAction(GameState state) { }
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
@@ -350,6 +355,7 @@ namespace FarmerLibrary
     public sealed class BuyButton : GameButton
     {
         private IBuyable Product;
+        private ProductTextDisplay? TextDisplay;
 
         public BuyButton(Bitmap icon, ProportionalRectangle position, IBuyable product) : base(icon, position)
         {
@@ -362,9 +368,16 @@ namespace FarmerLibrary
             HighlightOn = false;
         }
 
+        public void SetProductDisplay(ProductTextDisplay textDisplay) => TextDisplay = textDisplay;
+
         protected override bool Action(GameState state)
         {
             return state.Buy(Product);
+        }
+
+        protected override void HoverAction(GameState state)
+        {
+            TextDisplay?.SetProduct(Product);
         }
     }
 
@@ -833,14 +846,17 @@ namespace FarmerLibrary
         }
     }
 
-    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-    public class MoneyDisplay : IDrawable
-    {
-        private Bitmap Background;
-        private ProportionalRectangle Position;
-        private static StringFormat Format = new StringFormat();
 
-        public MoneyDisplay(Bitmap background, ProportionalRectangle position)
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public abstract class TextDisplay : IDrawable
+    {
+        protected Bitmap Background;
+        protected ProportionalRectangle Position;
+        protected StringFormat Format = new StringFormat();
+        protected Font Font = new Font("Arial", 16);
+        protected Brush Brush = new SolidBrush(Color.Black);
+
+        public TextDisplay(Bitmap background, ProportionalRectangle position)
         {
             Background = background;
             Position = position;
@@ -849,20 +865,82 @@ namespace FarmerLibrary
             Format.Alignment = StringAlignment.Center;
         }
 
+        protected abstract string GenerateText(GameState state);
+
+        public void SetFont(Font font) => Font = font;
+        public void SetBrush(Brush brush) => Brush = brush;
+        
+
         public void Draw(Graphics g, GameState state, int width, int height)
         {
             g.DrawImage(Background, Position.GetAbsolute(width, height));
 
-            // Build string
+            string text = GenerateText(state);
+
+            g.DrawString(text, Font, Brush, Position.GetAbsolute(width, height), Format);
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class BasicTextDisplay : TextDisplay
+    {
+        private string Text { get; set; } = "";
+        public BasicTextDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
+        public BasicTextDisplay(string text, Bitmap background, ProportionalRectangle position) : base(background, position)
+        {
+            Text = text;
+        }
+
+        protected override string GenerateText(GameState state) => Text;
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class MoneyDisplay : TextDisplay
+    {
+        public MoneyDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
+
+        protected override string GenerateText(GameState state)
+        {
             string text = "$" + state.PlayerMoney.ToString();
             if (state.PlayerMoney >= 1_000_000)
                 text = "$" + (state.PlayerMoney / 1000000).ToString() + "M";
             else if (state.PlayerMoney >= 10_000)
-                text = "$" + (state.PlayerMoney/1000).ToString() + "k";
-
-            g.DrawString(text, new Font("Arial", 16), new SolidBrush(Color.Black), Position.GetAbsolute(width, height), Format);
+                text = "$" + (state.PlayerMoney / 1000).ToString() + "k";
+            return text;
         }
     }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class ProductTextDisplay : TextDisplay
+    {
+        private IBuyable? Product;
+
+        public void SetProduct(IBuyable product) => Product = product;
+        public void UnsetProduct() => Product = null;
+
+        public bool ShowPrice { get; set; } = true;
+
+        public ProductTextDisplay(Bitmap background, ProportionalRectangle position) : base (background, position) { }
+        public ProductTextDisplay(Seed product, Bitmap background, ProportionalRectangle position) : base(background, position)
+        {
+            Product = product;
+        }
+        protected override string GenerateText(GameState state)
+        {
+            if (Product is IBuyable b)
+            {
+                int amount, price;
+                amount = state.GetOwnedAmount(b);
+                price = (int) b.BuyPrice;
+                if (ShowPrice)
+                    return $"{b.Name}: owned {amount}, price ${price}";
+                else
+                    return $"{b.Name}: owned {amount}";
+            }
+            return "";
+        }
+    }
+
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class StaminaDisplay(ProportionalRectangle position, Bitmap background, Bitmap level, Bitmap empty, Bitmap top) : IDrawable
@@ -933,7 +1011,7 @@ namespace FarmerLibrary
         protected CursorHandler Cursor = new();
 
         // Things to display on top of everything
-        protected List<IDrawable> topIcons = [];
+        protected List<IDrawable> TopIcons = [];
 
         public virtual void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
@@ -956,7 +1034,7 @@ namespace FarmerLibrary
 
         public void AddTopIcon(IDrawable icon)
         {
-            topIcons.Add(icon);
+            TopIcons.Add(icon);
         }
 
         public void SetEventDisplay(EventDisplay eventDisplay) => EventDisplay = eventDisplay;
@@ -969,7 +1047,7 @@ namespace FarmerLibrary
 
         protected void DrawTopIcons(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
-            foreach (IDrawable item in topIcons)
+            foreach (IDrawable item in TopIcons)
                 item.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
@@ -1373,6 +1451,7 @@ namespace FarmerLibrary
     public class ShopSceneHandler : SceneHandler
     {
         private MenuHandler ShoppingMenu;
+        private ProductTextDisplay Text;
 
         public ShopSceneHandler()
         {
@@ -1382,11 +1461,17 @@ namespace FarmerLibrary
 
             Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shop.png"), new ProportionalRectangle(0.79, 0.98, 0.01, 0.18), View.RoadView));
             Clickables.Add(ShoppingMenu);
+
+            Text = new ProductTextDisplay(new Bitmap("Assets\\Text-display.png"), new ProportionalRectangle(0.11, 0.65, 0.66, 0.8));
+
+            TopIcons.Add(Text);
         }
 
         public void AddStock(IBuyable item, Bitmap icon)
         {
-            ShoppingMenu.Add(new BuyButton(icon, item));
+            var BuyButton = new BuyButton(icon, item);
+            BuyButton.SetProductDisplay(Text);
+            ShoppingMenu.Add(BuyButton);
             ShoppingMenu.RepositionButtons(0.11, 0.2, 0.01, 0.04);
         }
     }
@@ -1577,7 +1662,6 @@ namespace FarmerLibrary
 // deal with text displays (amounts and prices)
 // saving
 // challenges
-// event viewing
 // housekeeping (restructure, TODOs)
 // Testing chicken
 // Docs
