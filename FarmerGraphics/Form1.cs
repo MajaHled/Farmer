@@ -19,11 +19,11 @@ namespace FarmerGraphics
             panel1.BackColor = Color.Red;
 
             gameState = GameState.GetClassicStartingState();
-            gameSceneHandler = new FarmerLibrary.FarmerGraphics(gameState);
+            gameSceneHandler = new FarmerGraphics(gameState);
         }
 
         private GameState gameState;
-        private FarmerLibrary.FarmerGraphics gameSceneHandler;
+        private FarmerGraphics gameSceneHandler;
 
         private void Form1_Load(object sender, EventArgs e) { }
 

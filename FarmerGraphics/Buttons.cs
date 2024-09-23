@@ -1,0 +1,328 @@
+﻿using FarmerLibrary;
+
+namespace FarmerGraphics
+{
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public abstract class GameButton : IClickable
+    {
+        protected Bitmap Icon;
+        protected ProportionalRectangle? Position;
+
+        // Highlight behavior
+        protected bool Highlighed = false;
+        protected readonly double HIGHLIGHT_MARGIN = 0.01;
+        public bool HighlightOn { get; set; } = true;
+
+        public List<IClickable> ToEnable { get; init; }
+        public List<IClickable> ToDisable { get; init; }
+
+        public bool Enabled { get; private set; }
+
+        public GameButton(Bitmap icon, ProportionalRectangle position)
+        {
+            Icon = icon;
+            Position = position;
+            Enabled = true;
+            ToEnable = [];
+            ToDisable = [];
+        }
+
+        public GameButton(Bitmap icon)
+        {
+            Icon = icon;
+            Position = null;
+            Enabled = true;
+            ToEnable = [];
+            ToDisable = [];
+        }
+
+        public void SetPosition(ProportionalRectangle position) => Position = position;
+
+        public void UnsetPosition() => Position = null;
+
+        public void Disable() => Enabled = false;
+
+        public void Enable() => Enabled = true;
+
+        public void Draw(Graphics g, GameState state, int width, int height)
+        {
+            if (Position is null)
+                throw new InvalidOperationException("Cannot draw button with uninitialized position.");
+
+            else if (Position is ProportionalRectangle p && Enabled)
+            {
+                if (Highlighed && HighlightOn)
+                {
+                    var temp = new ProportionalRectangle(p.X1 - HIGHLIGHT_MARGIN, p.X2 + HIGHLIGHT_MARGIN, p.Y1 - HIGHLIGHT_MARGIN, p.Y2 + HIGHLIGHT_MARGIN);
+                    g.DrawImage(Icon, temp.GetAbsolute(width, height));
+                }
+                else
+                    g.DrawImage(Icon, p.GetAbsolute(width, height));
+            }
+        }
+
+        public void Click(double x, double y, GameState state)
+        {
+            if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
+            {
+                bool actionDone = Action(state);
+                if (!actionDone)
+                    return;
+
+                foreach (IClickable c in ToEnable)
+                {
+                    c.Enable();
+                }
+                foreach (IClickable c in ToDisable)
+                {
+                    c.Disable();
+                }
+
+            }
+        }
+
+        protected abstract bool Action(GameState state);
+
+        public void Hover(double x, double y, GameState state)
+        {
+            if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
+            {
+                Highlighed = true;
+                HoverAction(state);
+            }
+            else
+                Highlighed = false;
+        }
+
+        protected virtual void HoverAction(GameState state) { }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class PlantMenuButton : GameButton
+    {
+        private MenuHandler PlantMenu;
+        public PlantMenuButton(Bitmap icon, ProportionalRectangle position, MenuHandler plantMenu) : base(icon, position)
+        {
+            PlantMenu = plantMenu;
+        }
+
+
+        protected override bool Action(GameState state)
+        {
+            PlantMenu.Enable();
+            state.CurrentTool = null;
+            state.HeldProduct = null;
+            return true;
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class HarvestButton : GameButton
+    {
+        public HarvestButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
+
+        protected override bool Action(GameState state)
+        {
+            return state.SellHeld();
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class SceneSwitchButton : GameButton
+    {
+        private readonly FarmerLibrary.View Destination;
+        private bool takesStamina = false;
+
+        public SceneSwitchButton(Bitmap icon, ProportionalRectangle position, FarmerLibrary.View destination) : base(icon, position)
+        {
+            Destination = destination;
+        }
+        public void EnableStamina() => takesStamina = true;
+        public void DisableStamina() => takesStamina = false;
+
+
+        protected override bool Action(GameState state)
+        {
+            if (takesStamina)
+            {
+                if (!state.CanWork())
+                    return false;
+                state.DoLabor();
+            }
+
+            state.CurrentView = Destination;
+            state.ResetTemps();
+            return true;
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class ToolButton : GameButton
+    {
+        private Tool? Tool;
+
+        public ToolButton(Bitmap icon, ProportionalRectangle position, Tool? tool) : base(icon, position)
+        {
+            Tool = tool;
+        }
+        public ToolButton(Bitmap icon, Tool? tool) : base(icon)
+        {
+            Tool = tool;
+        }
+
+        protected override bool Action(GameState state)
+        {
+            if (state.CurrentTool?.GetType() == Tool?.GetType())
+                return false;
+            state.CurrentTool = Tool;
+            return true;
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class PlantButton : GameButton
+    {
+        private Seed ToPlant;
+
+        public PlantButton(Bitmap icon, ProportionalRectangle position, Seed toPlant) : base(icon, position)
+        {
+            ToPlant = toPlant;
+            HighlightOn = false;
+        }
+        public PlantButton(Bitmap icon, Seed toPlant) : base(icon)
+        {
+            ToPlant = toPlant;
+            HighlightOn = false;
+        }
+
+        protected override bool Action(GameState state)
+        {
+            return state.PlantSeedToCurrent(ToPlant);
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class BuyButton : GameButton
+    {
+        private IBuyable Product;
+        private ProductTextDisplay? TextDisplay;
+
+        public BuyButton(Bitmap icon, ProportionalRectangle position, IBuyable product) : base(icon, position)
+        {
+            Product = product;
+            HighlightOn = false;
+        }
+        public BuyButton(Bitmap icon, IBuyable product) : base(icon)
+        {
+            Product = product;
+            HighlightOn = false;
+        }
+
+        public void SetProductDisplay(ProductTextDisplay textDisplay) => TextDisplay = textDisplay;
+
+        protected override bool Action(GameState state)
+        {
+            return state.Buy(Product);
+        }
+
+        protected override void HoverAction(GameState state)
+        {
+            TextDisplay?.SetProduct(Product);
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class NewDayButton : GameButton
+    {
+        public NewDayButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
+
+        protected override bool Action(GameState state)
+        {
+            state.EndDay();
+            return true;
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class EggButton : GameButton, IClickable // Reimplement to get the new Draw() method
+    {
+        private EggSpot Spot;
+
+        public EggButton(Bitmap icon, ProportionalRectangle position, EggSpot spot) : base(icon, position)
+        {
+            Spot = spot;
+            HighlightOn = false;
+        }
+
+        public new void Draw(Graphics g, GameState state, int width, int height)
+        {
+            if (Position is null)
+                throw new InvalidOperationException("Cannot draw button with uninitialized position.");
+
+            else if (Position is ProportionalRectangle p && Enabled && Spot.HasEgg())
+                g.DrawImage(Icon, p.GetAbsolute(width, height));
+        }
+
+        protected override bool Action(GameState state)
+        {
+            if (state.CurrentTool is Tool t && state.HeldProduct is null)
+            {
+                t.Use(state, Spot);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class ToolExitButton : GameButton
+    {
+        private MenuHandler ToolMenu;
+        public ToolExitButton(MenuHandler toolMenu, Bitmap icon) : base(icon)
+        {
+            ToolMenu = toolMenu;
+        }
+
+        public ToolExitButton(MenuHandler toolMenu, Bitmap icon, ProportionalRectangle position) : base(icon, position)
+        {
+            ToolMenu = toolMenu;
+        }
+
+        protected override bool Action(GameState state)
+        {
+            if (state.CurrentTool is null)
+                return false;
+
+            state.CurrentTool = null;
+            ToolMenu.Enable();
+            this.Disable();
+            return true;
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public sealed class MenuExitButton : GameButton
+    {
+        private MenuHandler Menu;
+        public MenuExitButton(MenuHandler menu, Bitmap icon) : base(icon)
+        {
+            Menu = menu;
+        }
+
+        public MenuExitButton(MenuHandler menu, Bitmap icon, ProportionalRectangle position) : base(icon, position)
+        {
+            Menu = menu;
+        }
+
+        protected override bool Action(GameState state)
+        {
+            if (Menu.Enabled)
+            {
+                Menu.Disable();
+                this.Disable();
+                return true;
+            }
+            return false;
+        }
+    }
+}
