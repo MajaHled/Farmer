@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using System.Drawing.Printing;
 
 namespace FarmerLibrary
 {
@@ -1231,6 +1230,10 @@ namespace FarmerLibrary
             for  (int i = ChickenPositions.Count; i < state.CurrentCoop.ChickenCount; i++)
             {
                 ChickenPositions.Add(GetNewPosition());
+                // Sort by Y position, so that higher chickens are further back
+                ChickenPositions.Sort(Comparer<ProportionalRectangle>.Create((p1, p2) => p1.Y1.CompareTo(p2.Y1)));
+
+                // TODO this might break when loading
                 EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewPosition(), state.CurrentCoop.GetEggSpots()[i]));
                 Clickables.Add(EggSpots[i]);
             }
@@ -1243,7 +1246,6 @@ namespace FarmerLibrary
 
             // Reraw cursor so that it is drawn over the chickens
             Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
-
         }
 
         private ProportionalRectangle GetNewPosition()
@@ -1447,8 +1449,6 @@ namespace FarmerLibrary
 // challenges & events
 // housekeeping (images, restructure, TODOs)
 // Testing chicken
-// Sort chickens
-// Exit buttons
 // Add displays to scene handlers
 // Docs
 // Presentation
