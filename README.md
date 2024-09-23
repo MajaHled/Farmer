@@ -2,4 +2,4 @@
 
 A farming simulator.
 
-For more info, read the PFDs.
+For more info, read the PDFs.
