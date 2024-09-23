@@ -240,21 +240,28 @@ namespace FarmerLibrary
         }
 
         // Farming
-        public void PlantSeedToCurrent(Seed seed)
+        public bool PlantSeedToCurrent(Seed seed)
         {
             if (GetOwnedAmount(seed) == 0)
-                return;
+                return false;
 
-            CurrentFarm.PlantASeed(seed);
-            OwnedAmounts[seed.GetType()] -= 1;
+            if (CurrentFarm.PlantASeed(seed))
+            {
+                OwnedAmounts[seed.GetType()] -= 1;
+                return true;
+            }
+            return false;
         }
         public Tool? CurrentTool { get; set; } = null;
         public ISellable? HeldProduct { get; set; } = null;
-        public void SellHeld()
+        public bool SellHeld()
         {
-            if (HeldProduct is not null)
-                PlayerMoney += HeldProduct.SellPrice;
+            if (HeldProduct == null)
+                return false;
+
+            PlayerMoney += HeldProduct.SellPrice;
             HeldProduct = null;
+            return true;
         }
 
         // Stamina

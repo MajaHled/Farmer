@@ -215,6 +215,10 @@ namespace FarmerLibrary
         {
             if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
             {
+                bool actionDone = Action(state);
+                if (!actionDone)
+                    return;
+
                 foreach (IClickable c in ToEnable)
                 {
                     c.Enable();
@@ -224,11 +228,10 @@ namespace FarmerLibrary
                     c.Disable(); 
                 }
 
-                Action(state);
             }
         }
 
-        protected abstract void Action(GameState state);
+        protected abstract bool Action(GameState state);
 
         public void Hover(double x, double y, GameState state)
         {
@@ -248,11 +251,12 @@ namespace FarmerLibrary
             PlantMenu = plantMenu;
         }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
             PlantMenu.Enable();
             state.CurrentTool = null;
             state.HeldProduct = null;
+            return true;
         }
     }
 
@@ -261,9 +265,9 @@ namespace FarmerLibrary
     {
         public HarvestButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
-            state.SellHeld();
+            return state.SellHeld();
         }
     }
 
@@ -281,17 +285,18 @@ namespace FarmerLibrary
         public void DisableStamina() => takesStamina = false;
 
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
             if (takesStamina)
             {
                 if (!state.CanWork())
-                    return;
+                    return false;
                 state.DoLabor();
             }
 
             state.CurrentView = Destination;
             state.ResetTemps();
+            return true;
         }
     }
 
@@ -309,9 +314,12 @@ namespace FarmerLibrary
             Tool = tool;
         }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
+            if (state.CurrentTool?.GetType() == Tool?.GetType())
+                return false;
             state.CurrentTool = Tool;
+            return true;
         }
     }
 
@@ -331,9 +339,9 @@ namespace FarmerLibrary
             HighlightOn = false;
         }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
-            state.PlantSeedToCurrent(ToPlant);
+            return state.PlantSeedToCurrent(ToPlant);
         }
     }
 
@@ -353,9 +361,9 @@ namespace FarmerLibrary
             HighlightOn = false;
         }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
-            state.Buy(Product);
+            return state.Buy(Product);
         }
     }
 
@@ -364,9 +372,10 @@ namespace FarmerLibrary
     {
         public NewDayButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
             state.EndDay();
+            return true;
         }
     }
 
@@ -390,10 +399,14 @@ namespace FarmerLibrary
                 g.DrawImage(Icon, p.GetAbsolute(width, height));
         }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
             if (state.CurrentTool is Tool t && state.HeldProduct is null)
+            {
                 t.Use(state, Spot);
+                return true;
+            }
+            return false;
         }
     }
 
@@ -411,11 +424,15 @@ namespace FarmerLibrary
             ToolMenu = toolMenu;
         }
 
-        protected override void Action(GameState state)
+        protected override bool Action(GameState state)
         {
+            if (state.CurrentTool is null)
+                return false;
+
             state.CurrentTool = null;
             ToolMenu.Enable();
             this.Disable();
+            return true;
         }
     }
 
@@ -425,7 +442,9 @@ namespace FarmerLibrary
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MenuHandler : IClickable
     {
-        public List<GameButton> Buttons { get; init; } // TODO Maybe like intexer, dont want it modified form outside maybe
+        private readonly List<GameButton> Buttons;
+        public List<GameButton> GetButtonsList() => new List<GameButton>(Buttons);
+
         private Bitmap Background;
         public ProportionalRectangle BackgroundPosition { get; init; } 
 
@@ -1481,11 +1500,11 @@ namespace FarmerLibrary
 // do chicken and tools in shop
 // deal with text displays (amounts and prices)
 // saving
-// challenges & events
+// challenges
+// event viewing
 // housekeeping (restructure, TODOs)
 // Testing chicken
 // Docs
 // Presentation
 // Maybe: new plants
 // Exit plant menu
-// Plant menu breaks when no seeds
