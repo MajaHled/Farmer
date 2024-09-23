@@ -570,13 +570,13 @@ namespace FarmerLibrary
             PlantStates = plantStates;
 
             // Named assets
-            NamedAssets.Load("Worm", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Worm.png");
-            NamedAssets.Load("Dead", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Dead.png");
+            NamedAssets.Load("Worm", "Assets\\Worm.png");
+            NamedAssets.Load("Dead", "Assets\\Dead.png");
 
-            NamedAssets.Load("Plot-watered", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-watered-center.png");
-            NamedAssets.Load("Plot-highlighted", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-highlighted-center.png");
-            NamedAssets.Load("Plot-both", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plot-both.png");
-            NamedAssets.Load("Plots-default", "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Plots-default.png");
+            NamedAssets.Load("Plot-watered", "Assets\\Plot-watered-center.png");
+            NamedAssets.Load("Plot-highlighted", "Assets\\Plot-highlighted-center.png");
+            NamedAssets.Load("Plot-both", "Assets\\Plot-both.png");
+            NamedAssets.Load("Plots-default", "Assets\\Plots-default.png");
 
 
             // Initialize plots:
@@ -894,7 +894,7 @@ namespace FarmerLibrary
         public MainSceneHandler()
         {
             // Load assets
-            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farmer-even.png");
+            Background = new Bitmap("Assets\\Farmer-even.png");
 
             // Initialize farm interaction areas
             // TODO remake as clickables
@@ -907,15 +907,15 @@ namespace FarmerLibrary
             farmCoords.Add(new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[2], YBounds[3]));
             farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]));
 
-            ArrowButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView);
+            ArrowButton = new SceneSwitchButton(new Bitmap("Assets\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), View.RoadView);
             ArrowButton.EnableStamina();
             Clickables.Add(ArrowButton);
 
-            HouseButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.352), View.CoopView);
+            HouseButton = new SceneSwitchButton(new Bitmap("Assets\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.352), View.CoopView);
             HouseButton.HighlightOn = false;
             Clickables.Add(HouseButton);
 
-            CoopButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.352), View.HouseView);
+            CoopButton = new SceneSwitchButton(new Bitmap("Assets\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.352), View.HouseView);
             CoopButton.HighlightOn = false;
             Clickables.Add(CoopButton);
 
@@ -967,49 +967,49 @@ namespace FarmerLibrary
         public FarmSceneHandler()
         {
             // Load assets:
-            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Farm.png");
+            Background = new Bitmap("Assets\\Farm.png");
 
             // Assets for toolbar
-            ToolIconLoader.Add(typeof(Hand), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Hand.png"));
-            ToolIconLoader.Add(typeof(Pail), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Pail.png"));
-            ToolIconLoader.Add(typeof(Bag), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
-            ToolIconLoader.Add(typeof(Bottle), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bottle.png"));
-            ToolIconLoader.Add(typeof(Scythe), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Scythe.png"));
+            ToolIconLoader.Add(typeof(Hand), new Bitmap("Assets\\Hand.png"));
+            ToolIconLoader.Add(typeof(Pail), new Bitmap("Assets\\Pail.png"));
+            ToolIconLoader.Add(typeof(Bag), new Bitmap("Assets\\Bag.png"));
+            ToolIconLoader.Add(typeof(Bottle), new Bitmap("Assets\\Bottle.png"));
+            ToolIconLoader.Add(typeof(Scythe), new Bitmap("Assets\\Scythe.png"));
 
             // Held fruit assets for harvesting
-            FruitAssets.Add(typeof(RaddishFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Raddish.png"));
-            FruitAssets.Add(typeof(CarrotFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Carrot.png"));
-            FruitAssets.Add(typeof(PotatoFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Potato.png"));
-            FruitAssets.Add(typeof(TomatoFruit), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Tomato.png"));
+            FruitAssets.Add(typeof(RaddishFruit), new Bitmap("Assets\\Raddish.png"));
+            FruitAssets.Add(typeof(CarrotFruit), new Bitmap("Assets\\Carrot.png"));
+            FruitAssets.Add(typeof(PotatoFruit), new Bitmap("Assets\\Potato.png"));
+            FruitAssets.Add(typeof(TomatoFruit), new Bitmap("Assets\\Tomato.png"));
 
             // Plant assets
             PlantAssets.Load(typeof(RaddishPlant),
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Adult-raddish.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-raddish.png"
+                "Assets\\Seed.png",
+                "Assets\\Small-seedling.png",
+                "Assets\\Big-seedling.png",
+                "Assets\\Adult-raddish.png",
+                "Assets\\Fruiting-raddish.png"
             );
             PlantAssets.Load(typeof(CarrotPlant),
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Adult-carrot.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-carrot.png"
+                "Assets\\Seed.png",
+                "Assets\\Small-seedling.png",
+                "Assets\\Big-seedling.png",
+                "Assets\\Adult-carrot.png",
+                "Assets\\Fruiting-carrot.png"
             );
             PlantAssets.Load(typeof(PotatoPlant),
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling-multi.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling-multi.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Adult-potato.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-potato.png"
+                "Assets\\Seed.png",
+                "Assets\\Small-seedling-multi.png",
+                "Assets\\Big-seedling-multi.png",
+                "Assets\\Adult-potato.png",
+                "Assets\\Fruiting-potato.png"
             );
             PlantAssets.Load(typeof(TomatoPlant),
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Seed.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Small-seedling-multi.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Big-seedling-multi.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Adult-tomato.png",
-                "C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Fruiting-tomato.png"
+                "Assets\\Seed.png",
+                "Assets\\Small-seedling-multi.png",
+                "Assets\\Big-seedling-multi.png",
+                "Assets\\Adult-tomato.png",
+                "Assets\\Fruiting-tomato.png"
             );
 
             // Initialize cursor handler with icons
@@ -1018,7 +1018,7 @@ namespace FarmerLibrary
 
             // Initialize menus:
             // Toolbar
-            ToolMenu = new ToolMenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Toolbar.png"), new ProportionalRectangle(0.31, 0.97, 0.82, 0.98));
+            ToolMenu = new ToolMenuHandler(new Bitmap("Assets\\Toolbar.png"), new ProportionalRectangle(0.31, 0.97, 0.82, 0.98));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Pail)), new Pail()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bag)), new Bag()));
@@ -1027,12 +1027,12 @@ namespace FarmerLibrary
 
             ToolMenu.RepositionButtons(0.08, 0.14, 0.02, 0.01);
 
-            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
+            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("Assets\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
             ExitButton.Disable();
             ToolMenu.SetExitButton(ExitButton);
 
             // Planting menu
-            PlantMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
+            PlantMenu = new MenuHandler(new Bitmap("Assets\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
             PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(RaddishFruit)), new RaddishSeed()));
             PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(CarrotFruit)), new CarrotSeed()));
             PlantMenu.Add(new PlantButton(FruitAssets.GetImage(typeof(TomatoFruit)), new TomatoSeed()));
@@ -1042,9 +1042,9 @@ namespace FarmerLibrary
             PlantMenu.Disable();
 
             // Initialize buttons:
-            HarvestButton = new HarvestButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
-            BackButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView);
-            PlantMenuButton = new PlantMenuButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Planting-plant.png"), new ProportionalRectangle(0.01, 0.20, 0.18, 0.44), PlantMenu);
+            HarvestButton = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
+            BackButton = new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView);
+            PlantMenuButton = new PlantMenuButton(new Bitmap("Assets\\Planting-plant.png"), new ProportionalRectangle(0.01, 0.20, 0.18, 0.44), PlantMenu);
 
             Farm = new FarmDisplay(PlantAssets);
 
@@ -1133,16 +1133,16 @@ namespace FarmerLibrary
         public RoadSceneHandler()
         {
             // Load assets
-            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shops-background.png");
+            Background = new Bitmap("Assets\\Shops-background.png");
 
-            SeedShop = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.06, 0.37, 0.09, 0.79), View.SeedShopView);
+            SeedShop = new SceneSwitchButton(new Bitmap("Assets\\ShopHouse.png"), new ProportionalRectangle(0.06, 0.37, 0.09, 0.79), View.SeedShopView);
             SeedShop.HighlightOn = false;
-            ChickShop = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\ShopHouse.png"), new ProportionalRectangle(0.63, 0.94, 0.09, 0.79), View.ChickShopView);
+            ChickShop = new SceneSwitchButton(new Bitmap("Assets\\ShopHouse.png"), new ProportionalRectangle(0.63, 0.94, 0.09, 0.79), View.ChickShopView);
             ChickShop.HighlightOn = false;
 
             Clickables.Add(SeedShop);
             Clickables.Add(ChickShop);
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), View.FullView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), View.FullView));
         }
     }
 
@@ -1169,39 +1169,39 @@ namespace FarmerLibrary
         public CoopSceneHandler()
         {
             // Load Assets
-            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-background.png");
+            Background = new Bitmap("Assets\\Coop-background.png");
 
-            ToolIconLoader.Add(typeof(Hand), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Hand.png"));
-            ToolIconLoader.Add(typeof(Bag), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
+            ToolIconLoader.Add(typeof(Hand), new Bitmap("Assets\\Hand.png"));
+            ToolIconLoader.Add(typeof(Bag), new Bitmap("Assets\\Bag.png"));
 
-            EggAssets.Add(typeof(Egg), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Egg.png"));
+            EggAssets.Add(typeof(Egg), new Bitmap("Assets\\Egg.png"));
 
-            Chicken = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Chicken.png");
+            Chicken = new Bitmap("Assets\\Chicken.png");
 
             // Initialize cursor handler with icons
             Cursor.SetToolIcons(ToolIconLoader);
             Cursor.SetSellableIcons(EggAssets);
 
             // Menu
-            ToolMenu = new ToolMenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Coop-menu.png"), new ProportionalRectangle(0.32, 0.59, 0.11, 0.27));
+            ToolMenu = new ToolMenuHandler(new Bitmap("Assets\\Coop-menu.png"), new ProportionalRectangle(0.32, 0.59, 0.11, 0.27));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bag)), new Bag()));
 
             ToolMenu.RepositionButtons(0.069, 0.12, 0.02, 0.01);
 
-            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
+            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("Assets\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
             ExitButton.Disable();
             ToolMenu.SetExitButton(ExitButton);
 
             // Controls
-            BackButton = new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView);
+            BackButton = new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView);
             Clickables.Add(BackButton);
-            Clickables.Add(new FeederDisplay(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Feeder.png"),
-                                             new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Feed.png"),
+            Clickables.Add(new FeederDisplay(new Bitmap("Assets\\Feeder.png"),
+                                             new Bitmap("Assets\\Feed.png"),
                                              new ProportionalRectangle(0.24, 0.64, 0.4, 0.72)));
             Clickables.Add(ToolMenu);
 
-            HarvestHouse = new HarvestButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
+            HarvestHouse = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
             Clickables.Add(HarvestHouse);
             Clickables.Add(ExitButton);
 
@@ -1266,11 +1266,11 @@ namespace FarmerLibrary
 
         public ShopSceneHandler()
         {
-            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop.png");
+            Background = new Bitmap("Assets\\Shop.png");
 
-            ShoppingMenu = new MenuHandler(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Shop-menu.png"), new ProportionalRectangle(0.06, 0.69, 0.13, 0.87));
+            ShoppingMenu = new MenuHandler(new Bitmap("Assets\\Shop-menu.png"), new ProportionalRectangle(0.06, 0.69, 0.13, 0.87));
 
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Arrow-shop.png"), new ProportionalRectangle(0.79, 0.98, 0.01, 0.18), View.RoadView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shop.png"), new ProportionalRectangle(0.79, 0.98, 0.01, 0.18), View.RoadView));
             Clickables.Add(ShoppingMenu);
         }
 
@@ -1286,10 +1286,10 @@ namespace FarmerLibrary
     {
         public HouseSceneHandler()
         {
-            Background = new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\House.png");
+            Background = new Bitmap("Assets\\House.png");
 
-            Clickables.Add(new SceneSwitchButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
-            Clickables.Add(new NewDayButton(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\New-day.png"), new ProportionalRectangle(0.02, 0.14, 0.12, 0.35)));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), View.FullView));
+            Clickables.Add(new NewDayButton(new Bitmap("Assets\\New-day.png"), new ProportionalRectangle(0.02, 0.14, 0.12, 0.35)));
         }
     }
 
@@ -1325,20 +1325,20 @@ namespace FarmerLibrary
             height = 540;
             //TODO better resize handling
 
-            SeedShopScene.AddStock(new RaddishSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Raddish.png"));
-            SeedShopScene.AddStock(new CarrotSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Carrot.png"));
-            SeedShopScene.AddStock(new PotatoSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Potato.png"));
-            SeedShopScene.AddStock(new TomatoSeed(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Tomato.png"));
+            SeedShopScene.AddStock(new RaddishSeed(), new Bitmap("Assets\\Raddish.png"));
+            SeedShopScene.AddStock(new CarrotSeed(), new Bitmap("Assets\\Carrot.png"));
+            SeedShopScene.AddStock(new PotatoSeed(), new Bitmap("Assets\\Potato.png"));
+            SeedShopScene.AddStock(new TomatoSeed(), new Bitmap("Assets\\Tomato.png"));
 
-            ChickShopScene.AddStock(new Chicken(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Chicken.png"));
-            //ChickShopScene.AddStock(new Bag(), new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Bag.png"));
+            ChickShopScene.AddStock(new Chicken(), new Bitmap("Assets\\Chicken.png"));
+            //ChickShopScene.AddStock(new Bag(), new Bitmap("Assets\\Bag.png"));
 
-            Money = new MoneyDisplay(new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.02, 0.13));
+            Money = new MoneyDisplay(new Bitmap("Assets\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.02, 0.13));
             Stamina = new StaminaDisplay(new ProportionalRectangle(0.9, 0.98, 0.02, 0.15),
-                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-background.png"),
-                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-level.png"),
-                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-empty.png"),
-                                         new Bitmap("C:\\Users\\Marie Hledíková\\OneDrive\\Pictures\\Stamina-top.png"));
+                                         new Bitmap("Assets\\Stamina-background.png"),
+                                         new Bitmap("Assets\\Stamina-level.png"),
+                                         new Bitmap("Assets\\Stamina-empty.png"),
+                                         new Bitmap("Assets\\Stamina-top.png"));
         }
 
         public void Paint(Graphics g)
