@@ -1,6 +1,77 @@
-﻿namespace FarmerLibrary
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace FarmerLibrary
 {
     public enum View { FullView, FarmView, CoopView, HouseView, RoadView, SeedShopView, ChickShopView }
+
+    public class DayEventHandler
+    {
+        private List<DayEvent> events = new List<DayEvent>();
+
+        public void TryEvents(GameState state)
+        {
+            foreach (DayEvent e in events)
+            {
+                e.TryEvent(state);
+            }
+        }
+
+        public void AddEvent(DayEvent e) => events.Add(e);
+    }
+
+    public abstract class DayEvent
+    {
+        protected Random rnd = new Random();
+        private double Chance;
+
+        public DayEvent(double chance)
+        {
+            Chance = chance; 
+        }
+
+        public void TryEvent(GameState state)
+        {
+            if (rnd.NextDouble() < Chance)
+                StartEvent(state);
+        }
+
+        protected abstract void StartEvent(GameState state);
+    }
+
+    #region Events
+
+    public sealed class RainEvent : DayEvent
+    {
+        public RainEvent(double chance) : base(chance) { }
+
+        protected override void StartEvent(GameState state)
+        {
+            foreach (Farm farm in state.GetFarmList())
+                for (int i = 0; i < farm.Rows * farm.Cols; i++) // TODO enumerable
+                    farm[i].Water();
+
+            // TODO view the rain, there should be an active events list in state that the graphics can respond to
+        }
+    }
+
+    public sealed class WormEvent : DayEvent
+    {
+        double WormChance;
+        public WormEvent(double occuracneChance, double wormChance) : base(occuracneChance)
+        {
+            WormChance = wormChance;
+        }
+
+        protected override void StartEvent(GameState state)
+        {
+            foreach (Farm farm in state.GetFarmList())
+                for (int i = 0; i < farm.Rows * farm.Cols; i++) // TODO enumerable
+                    if (rnd.NextDouble() < WormChance)
+                        farm[i].GiveBug();
+        }
+    }
+
+    #endregion
 
     public abstract class Tool
     {
@@ -118,6 +189,7 @@
                 throw new IndexOutOfRangeException($"Can't select farm index {index}, there are only {Farms.Count} farms.");
             CurrentFarmIndex = index;
         }
+        public List<Farm> GetFarmList() => new List<Farm>(Farms); 
 
         // Coop state
         // Note: this is made more generally than the actual app uses currently
@@ -191,15 +263,18 @@
         public void DoLabor() => Stamina = Math.Max(0, Stamina - STAMINA_STEP);
         public bool CanWork() => Stamina >= STAMINA_STEP;
         
+        // Events
+        private DayEventHandler eventHandler = new();
 
         public void ResetTemps()
         {
             CurrentTool = null;
             HeldProduct = null;
             CurrentFarmIndex = 0;
+            CurrentCoopIndex = 0;
         }
 
-        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney, uint actionsPerDay)
+        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney, uint actionsPerDay, double eventChance)
         {
             for (int i = 0; i < numFarms; i++)
             {
@@ -222,6 +297,9 @@
             OwnedAmounts.Add(typeof(Chicken), 2);
 
             STAMINA_STEP = 1 / (double) actionsPerDay;
+
+            eventHandler.AddEvent(new RainEvent(eventChance));
+            eventHandler.AddEvent(new WormEvent(eventChance, 0.5));
         }
 
         public void EndDay()
@@ -233,11 +311,13 @@
                 coop.EndDay();
 
             Stamina = 1;
+
+            eventHandler.TryEvents(this);
         }
 
         public static GameState GetClassicStartingState()
         {
-            return new GameState(4, 3, 4, 1, 5, View.FullView, 1000, 160);
+            return new GameState(4, 3, 4, 1, 5, View.FullView, 1000, 160, 0.1);
         }
     }
 
