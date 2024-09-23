@@ -47,8 +47,8 @@ namespace FarmerGraphics
         private StaminaDisplay Stamina;
         private EventDisplay EventDisplay;
 
-        public int width, height;
-        // TODO better access
+        public int width { get; set; }
+        public int height { get; set; }
 
         public FarmerGraphics(GameState gameState)
         {
@@ -197,6 +197,7 @@ namespace FarmerGraphics
 
 // TODO plan:
 // do chicken and tools in shop
+// Days display
 // unset text displays
 // saving
 // challenges
@@ -205,4 +206,3 @@ namespace FarmerGraphics
 // Docs
 // Presentation
 // Maybe: new plants
-// Maybe load all the assets into one big loader and load by name

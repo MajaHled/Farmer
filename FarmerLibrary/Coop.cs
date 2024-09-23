@@ -16,10 +16,6 @@
             Capacity = chickenSlots;
             Feeder = new ChickenFeeder(chickenSlots);
             Spots = new List<EggSpot>((int)chickenSlots);
-
-            //TODO temp
-            AddChicken(new Chicken());
-            AddChicken(new Chicken());
         }
 
         public void AddChicken(Chicken chicken)
@@ -149,6 +145,6 @@
 
     public class Egg : ISellable
     {
-        public uint SellPrice => 100; //TODO temp
+        public uint SellPrice => 100;
     }
 }

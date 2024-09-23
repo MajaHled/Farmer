@@ -142,7 +142,7 @@ namespace FarmerLibrary
         public Fruit? Harvest()
         {
             // Check if harvestable
-            if (TimesHarvested >= TimesHarvestable) //TODO: see how the harvested times actually work lmao
+            if (TimesHarvested >= TimesHarvestable)
             {
                 throw new InvalidOperationException($"Cannot harvest an overharvested plant. Times harvested: {TimesHarvested}, times harvestable: {TimesHarvestable}.");
             }

@@ -125,13 +125,6 @@
             CurrentView = startView;
             PlayerMoney = playerMoney;
 
-            //TODO temp
-            OwnedAmounts.Add(typeof(RaddishSeed), 5);
-            OwnedAmounts.Add(typeof(CarrotSeed), 5);
-            OwnedAmounts.Add(typeof(PotatoSeed), 5);
-            OwnedAmounts.Add(typeof(TomatoSeed), 5);
-            OwnedAmounts.Add(typeof(Chicken), 2);
-
             STAMINA_STEP = 1 / (double) actionsPerDay;
 
             eventHandler.AddEvent(new WormEvent(eventChance, 0.5));

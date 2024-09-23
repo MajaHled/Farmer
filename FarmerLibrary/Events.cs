@@ -52,8 +52,6 @@
             foreach (Farm farm in state.GetFarmList())
                 for (int i = 0; i < farm.Rows * farm.Cols; i++) // TODO enumerable
                     farm[i].Water();
-
-            // TODO view the rain, there should be an active events list in state that the graphics can respond to
         }
     }
 

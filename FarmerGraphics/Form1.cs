@@ -12,7 +12,7 @@ namespace FarmerGraphics
 
             AspectRatio = Height / Width;
 
-            //TODO double buffered panel, maybe do it in a nice way (subclass)
+            //Panel needs to be double buffered to display properly
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null, panel1, new object[] { true });
             panel1.Width = 960;
             panel1.Height = 540;
