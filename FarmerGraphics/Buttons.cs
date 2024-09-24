@@ -141,7 +141,6 @@ namespace FarmerGraphics
         public void EnableStamina() => takesStamina = true;
         public void DisableStamina() => takesStamina = false;
 
-
         protected override bool Action(GameState state)
         {
             if (takesStamina)
@@ -158,6 +157,25 @@ namespace FarmerGraphics
             return true;
         }
     }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class FarmMiniature : SceneSwitchButton
+    {
+        private uint FarmIndex;
+        public FarmMiniature(Bitmap icon, RelativePosition position, uint farmIndex) : base(icon, position, FarmerLibrary.View.FarmView)
+        {
+            FarmIndex = farmIndex;
+        }
+
+        protected override bool Action(GameState state)
+        {
+            bool done = base.Action(state);
+            if (done)
+                state.SetFarm(FarmIndex);
+            return done;
+        }
+    }
+
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class ToolButton : GameButton

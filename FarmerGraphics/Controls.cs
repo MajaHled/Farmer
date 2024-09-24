@@ -79,7 +79,7 @@ namespace FarmerGraphics
                 if (startX + width + padding > BackgroundPosition.X2)
                 {
                     // new line
-                    startX = BackgroundPosition.X1 + gap;
+                    startX = BackgroundPosition.X1 + padding;
                     startY += height + gap;
 
                     // If can't fit another line

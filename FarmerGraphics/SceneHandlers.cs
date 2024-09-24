@@ -81,7 +81,7 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MainSceneHandler : SceneHandler
     {
-        private List<SceneSwitchButton> farmMiniatures = new(4);
+        private List<FarmMiniature> farmMiniatures = new(4);
 
         private SceneSwitchButton ArrowButton;
         private SceneSwitchButton HouseButton;
@@ -97,10 +97,10 @@ namespace FarmerGraphics
             double[] YBounds = { 0.368, 0.66, 0.694, 0.984 };
 
             Bitmap farm = new Bitmap("Assets\\Farm-mini.png");
-            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[0], XBounds[1], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
-            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[2], XBounds[3], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
-            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[0], XBounds[1], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
-            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[2], XBounds[3], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new FarmMiniature(farm, new RelativePosition(XBounds[0], XBounds[1], YBounds[0], YBounds[1]), 0));
+            farmMiniatures.Add(new FarmMiniature(farm, new RelativePosition(XBounds[2], XBounds[3], YBounds[0], YBounds[1]), 1));
+            farmMiniatures.Add(new FarmMiniature(farm, new RelativePosition(XBounds[0], XBounds[1], YBounds[2], YBounds[3]), 2));
+            farmMiniatures.Add(new FarmMiniature(farm, new RelativePosition(XBounds[2], XBounds[3], YBounds[2], YBounds[3]), 3));
 
             foreach (var f in farmMiniatures)
             {
