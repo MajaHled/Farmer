@@ -198,6 +198,8 @@ namespace FarmerGraphics
 // housekeeping (TODOs)
 // Presentation
 // Testing
-// Saving
-// Moar chicken  
-// IF: saving, melons, comments, clickable
+// Saving (+ better chicken and egg rendering)
+// melons (fix menu)
+// comments
+// clickable
+// Enumerable farms

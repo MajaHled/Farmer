@@ -165,11 +165,11 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class FarmDisplay : IClickable
     {
-        private ProportionalRectangle[,] plotCoords;
+        private ProportionalRectangle[,] PlotCoords;
         private NamedAssetsLoader NamedAssets = new();
         private PlantStatesLoader PlantStates;
 
-        public FarmDisplay(PlantStatesLoader plantStates)
+        public FarmDisplay(PlantStatesLoader plantStates, ProportionalRectangle[,] plotCoords)
         {
             Enabled = true;
             PlantStates = plantStates;
@@ -185,16 +185,7 @@ namespace FarmerGraphics
 
 
             // Initialize plots:
-            plotCoords = new ProportionalRectangle[3, 4]; //TODO hardcoded constants
-            double[] XBounds = [0.21, 0.39, 0.58, 0.77, 0.96];
-            double[] YBounds = [0.07, 0.31, 0.57, 0.81];
-            for (int i = 0; i < plotCoords.GetLength(0); i++)
-            {
-                for (int j = 0; j < plotCoords.GetLength(1); j++)
-                {
-                    plotCoords[i, j] = new ProportionalRectangle(XBounds[j], XBounds[j + 1], YBounds[i], YBounds[i + 1]);
-                }
-            }
+            PlotCoords = plotCoords;
         }
 
         public bool Enabled { get; private set; }
@@ -209,7 +200,7 @@ namespace FarmerGraphics
             {
                 for (int j = 0; j < state.CurrentFarm.Cols; j++)
                 {
-                    if (plotCoords[i, j].InArea(x, y))
+                    if (PlotCoords[i, j].InArea(x, y))
                     {
                         if (state.CurrentTool is Tool t && state.HeldProduct is null)
                             t.Use(state, state.CurrentFarm[i, j]);
@@ -231,7 +222,7 @@ namespace FarmerGraphics
             {
                 for (int j = 0; j < state.CurrentFarm.Cols; j++)
                 {
-                    if (plotCoords[i, j].InArea(x, y))
+                    if (PlotCoords[i, j].InArea(x, y))
                     {
                         state.CurrentFarm.Highlight(i, j);
                         break;
@@ -250,7 +241,7 @@ namespace FarmerGraphics
                 {
                     bool watered = state.CurrentFarm[i, j].Watered;
                     bool highlighted = state.CurrentFarm[i, j] == state.CurrentFarm.Highlighted;
-                    Rectangle position = plotCoords[i, j].GetAbsolute(width, height);
+                    Rectangle position = PlotCoords[i, j].GetAbsolute(width, height);
 
                     // Draw plot highlights and watered color
                     if (watered && highlighted)

@@ -47,6 +47,7 @@
                     }
                 }
 
+                toRemove.Reverse();
                 foreach (int i in toRemove)
                     Challenges.RemoveAt(i);
             }

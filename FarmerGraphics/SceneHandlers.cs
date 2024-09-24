@@ -250,7 +250,19 @@ namespace FarmerGraphics
 
             PlantMenu.Disable();
 
-            Farm = new FarmDisplay(PlantAssets);
+            // Initialize farm plots:
+            var plotCoords = new ProportionalRectangle[3, 4];
+            double[] XBounds = [0.21, 0.395, 0.585, 0.773, 0.96];
+            double[] YBounds = [0.07, 0.315, 0.57, 0.81];
+            for (int i = 0; i < plotCoords.GetLength(0); i++)
+            {
+                for (int j = 0; j < plotCoords.GetLength(1); j++)
+                {
+                    plotCoords[i, j] = new ProportionalRectangle(XBounds[j], XBounds[j + 1], YBounds[i], YBounds[i + 1]);
+                }
+            }
+
+            Farm = new FarmDisplay(PlantAssets, plotCoords);
 
             // Handle enable/disable
             PlantMenuButton.ToDisable.Add(Farm);
