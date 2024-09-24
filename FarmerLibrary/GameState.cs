@@ -46,7 +46,7 @@
                 // Can we buy more chickens?
                 if (CurrentCoop.ChickenCount >= CurrentCoop.Capacity)
                     return false;
-                CurrentCoop.AddChicken(c);
+                CurrentCoop.AddChicken(c.Copy());
             }
 
             // Add product to player's inventory
@@ -57,8 +57,6 @@
 
             // Take money
             PlayerMoney -= product.BuyPrice;
-
-            Points += ChallengeHandler.CheckChallenges(this);
 
             return true;
         }
@@ -110,6 +108,19 @@
         public List<Challenge> GetChallengeList() => new List<Challenge>(ChallengeHandler.GetChallengeList());
         public int Points { get; private set; } = 0;
 
+        public void UpdateChallenges()
+        {
+            Points += ChallengeHandler.CheckChallenges(this);
+
+            var earned = 1;
+            while (earned != 0)
+            {
+                ChallengeHandler.ReplenishChallenges();
+                earned = ChallengeHandler.CheckChallenges(this);
+                Points += earned;
+            }
+        }
+
         public void ResetTemps()
         {
             CurrentTool = null;
@@ -154,12 +165,11 @@
             TodaysEvents = EventHandler.TryEvents(this);
 
             ChallengeHandler.LogDayEnd(this);
-            Points += ChallengeHandler.CheckChallenges(this);
         }
 
         public static GameState GetClassicStartingState()
         {
-            return new GameState(4, 3, 4, 1, 5, View.FullView, 100, 160, 1, new DefaultChallengeHandler());
+            return new GameState(4, 3, 4, 1, 5, View.FullView, 5000, 160, 0.1, new DefaultChallengeHandler());
         }
     }
 

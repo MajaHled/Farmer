@@ -430,8 +430,6 @@ namespace FarmerGraphics
                 HarvestHouse.Disable();
             }
 
-            base.Draw(g, state, absoluteWidth, absoluteHeight);
-
             // Initialize new chicken and egg positions if needed
             for (int i = ChickenPositions.Count; i < state.CurrentCoop.ChickenCount; i++)
             {
@@ -442,6 +440,8 @@ namespace FarmerGraphics
                 EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewPosition(), state.CurrentCoop.GetEggSpots()[i]));
                 Clickables.Add(EggSpots[i]);
             }
+
+            base.Draw(g, state, absoluteWidth, absoluteHeight);
 
             // Draw chicken
             for (int i = 0; i < state.CurrentCoop.ChickenCount; i++)
@@ -506,7 +506,7 @@ namespace FarmerGraphics
 
             TopIcons.Add(new PointsDisplay(new Bitmap("Assets\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.8, 0.91)));
 
-            Board = new ChallengeBoard(new Bitmap("Assets\\Center-menu.png"), new Bitmap("Assets\\Challenge.png"), new ProportionalRectangle(0.16, 0.84, 0.1, 0.9), 0.05);
+            Board = new ChallengeBoard(new Bitmap("Assets\\Center-menu.png"), new Bitmap("Assets\\Challenge.png"), new ProportionalRectangle(0.16, 0.84, 0.1, 0.9), 3, 0.05);
             TopIcons.Add(Board);
         }
     }

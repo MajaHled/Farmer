@@ -1,5 +1,4 @@
 ﻿using FarmerLibrary;
-using System.Windows.Forms;
 
 namespace FarmerGraphics
 {
@@ -94,13 +93,15 @@ namespace FarmerGraphics
         private ProportionalRectangle Position;
         private List<ChallengeDisplay> Displays = new();
         private double Padding;
+        private int ToDisplay;
 
-        public ChallengeBoard(Bitmap background, Bitmap challengeBackground, ProportionalRectangle position, double padding)
+        public ChallengeBoard(Bitmap background, Bitmap challengeBackground, ProportionalRectangle position, int toDisplay, double padding)
         {
             Background = background;
             ChallengeBackground = challengeBackground;
             Position = position;
             Padding = padding;
+            ToDisplay = toDisplay;
         }
 
         private void UpdateChallenges(ChallengeHandler handler)
@@ -108,12 +109,19 @@ namespace FarmerGraphics
             Displays.Clear();
 
             double lastY = Position.Y1 + Padding;
-            double width = ((Position.Y2 - Position.Y1 - Padding) / handler.GetChallengeList().Count) - Padding;
+            double width = ((Position.Y2 - Position.Y1 - Padding) / ToDisplay) - Padding;
+
+            int displayed = 0;
             foreach (Challenge c in handler.GetChallengeList())
             {
+                if (displayed >= ToDisplay)
+                    break;
+
                 var p = new ProportionalRectangle(Position.X1 + Padding, Position.X2 - Padding, lastY, lastY + width);
                 Displays.Add(new ChallengeDisplay(c, ChallengeBackground, p));
                 lastY = lastY + width + Padding;
+
+                displayed++;
             }
 
         }

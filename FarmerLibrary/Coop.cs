@@ -85,6 +85,8 @@
         public uint BuyPrice => 1000;
         public string Name => "Chicken";
 
+        public Chicken Copy() => new Chicken();
+
         public bool Feed()
         {
             if (fed)

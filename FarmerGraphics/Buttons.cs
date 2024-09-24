@@ -150,6 +150,8 @@ namespace FarmerGraphics
                 state.DoLabor();
             }
 
+            state.UpdateChallenges();
+
             state.CurrentView = Destination;
             state.ResetTemps();
             return true;
@@ -247,6 +249,8 @@ namespace FarmerGraphics
         protected override bool Action(GameState state)
         {
             state.EndDay();
+            state.UpdateChallenges();
+
             return true;
         }
     }

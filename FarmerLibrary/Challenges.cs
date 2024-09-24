@@ -4,20 +4,50 @@
     {
         protected List<Challenge> Challenges = new List<Challenge>();
         public List<Challenge> GetChallengeList() => new List<Challenge>(Challenges);
-        
+        protected int? ActiveNumber;
+
+        public ChallengeHandler(int activeNumber)
+        {
+            ActiveNumber = activeNumber;
+        }
+
+        public ChallengeHandler() { }
+
+        public void SetActiveNumber(int activeNumber) => ActiveNumber = activeNumber;
+
         public void AddChallenge(Challenge challenge) => Challenges.Add(challenge);
 
         public int CheckChallenges(GameState state)
         {
             int reward = 0;
-            for (int i = 0; i < Challenges.Count; i++)
+
+            bool cont = true;
+            while (cont)
             {
-                if (Challenges[i].CheckFinished(state))
+                ReplenishChallenges();
+                cont = false;
+                int limit;
+                
+                if (ActiveNumber is int n)
+                    limit = Math.Min(Challenges.Count, n);
+                else
+                    limit = Challenges.Count;
+
+                var toRemove = new List<int>();
+                for (int i = 0; i < limit; i++)
                 {
-                    reward++;
-                    Challenges.RemoveAt(i);
+                    if (Challenges[i].CheckFinished(state))
+                    {
+                        reward++;
+                        toRemove.Add(i);
+                        cont = true;
+                    }
                 }
+
+                foreach (int i in toRemove)
+                    Challenges.RemoveAt(i);
             }
+
             return reward;
         }
 
@@ -27,18 +57,95 @@
                 c.LogDayEnd(state);
         }
 
-        public virtual void ReplenishChallenges() { }
+        protected virtual bool CanCreateNext => false;
+
+        protected virtual Challenge NextChallenge()
+        {
+            throw new InvalidOperationException("Can't create more Challenges.");
+        }
+
+        public void ReplenishChallenges()
+        {
+            if (ActiveNumber is int n)
+                for (int i = Challenges.Count; i < n; i++)
+                {
+                    if (!CanCreateNext)
+                        return;
+                    AddChallenge(NextChallenge());
+                }
+        }
     }
 
     public class DefaultChallengeHandler : ChallengeHandler
     {
-        public DefaultChallengeHandler()
+        private static List<int> MoneyValues = new List<int> { 200, 500, 1000, 2000, 3000, 5000, 10000 };
+        private int MoneyIndex = 0;
+        
+        private static List<int> EventValues = new List<int> { 1, 2, 3, 5, 10 };
+        private int RainEventIndex = 0;
+        private int WormEventIndex = 0;
+        private bool WormNext = false;
+
+        private int ChickenIndex = 1;
+
+        private int NextType = 0;
+
+        public DefaultChallengeHandler() : base(3)
         {
-            AddChallenge(new MoneyChallenge(200, 1));
-            AddChallenge(new EventChallenge(typeof(RainEvent), 1, 1));
-            AddChallenge(new ChickenChallenge(1, 1));
+            ReplenishChallenges();
         }
-        // TODO updates
+
+        protected override bool CanCreateNext => true;
+
+        protected override Challenge NextChallenge()
+        {
+            Challenge result;
+
+            switch (NextType)
+            {
+                case 0:
+                    if (MoneyIndex < MoneyValues.Count)
+                        result = new MoneyChallenge(MoneyValues[MoneyIndex], MoneyIndex);
+                    else
+                    {
+                        int value = MoneyValues[MoneyValues.Count - 1] * (MoneyIndex - MoneyValues.Count + 1);
+                        result = new MoneyChallenge(value, MoneyIndex);
+                    }
+                    MoneyIndex++;
+                    break;
+                case 1:
+                    if (WormNext)
+                    {
+                        result = new EventChallenge(typeof(WormEvent), EventValues[WormEventIndex], WormEventIndex+1);
+                        WormEventIndex++;
+                        WormNext = false;
+                    }
+                    else
+                    {
+                        result = new EventChallenge(typeof(RainEvent), EventValues[RainEventIndex], RainEventIndex+1);
+                        RainEventIndex++;
+                        WormNext = true;
+                    }
+                    break;
+                case 2:
+                    if (ChickenIndex <= 5)
+                    {
+                        result = new ChickenChallenge(ChickenIndex, ChickenIndex);
+                        ChickenIndex++;
+                    }
+                    else
+                    {
+                        NextType = 0;
+                        result = NextChallenge();
+                    }
+                    break;
+                default:
+                    throw new ArgumentException("Invalid NextType."); 
+            }
+
+            NextType = (NextType + 1) % 3;
+            return result;
+        }
     }
 
     public abstract class Challenge

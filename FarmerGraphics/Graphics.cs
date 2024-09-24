@@ -195,7 +195,9 @@ namespace FarmerGraphics
 }
 
 // TODO plan:
-// challenges
 // housekeeping (TODOs)
 // Presentation
+// Testing
+// Saving
+// Moar chicken  
 // IF: saving, melons, comments, clickable
