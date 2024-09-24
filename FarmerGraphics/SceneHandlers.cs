@@ -80,7 +80,7 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MainSceneHandler : SceneHandler
     {
-        private List<ProportionalRectangle> farmCoords;
+        private List<SceneSwitchButton> farmMiniatures = new(4);
 
         private SceneSwitchButton ArrowButton;
         private SceneSwitchButton HouseButton;
@@ -92,15 +92,22 @@ namespace FarmerGraphics
             Background = new Bitmap("Assets\\Farmer-even.png");
 
             // Initialize farm interaction areas
-            farmCoords = new List<ProportionalRectangle>();
-            double[] XBounds = { 0.02, 0.45, 0.54, 0.98 };
-            double[] YBounds = { 0.37, 0.66, 0.70, 0.98 };
+            double[] XBounds = { 0.02, 0.455, 0.547, 0.98 };
+            double[] YBounds = { 0.368, 0.66, 0.694, 0.984 };
 
-            farmCoords.Add(new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[0], YBounds[1]));
-            farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[0], YBounds[1]));
-            farmCoords.Add(new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[2], YBounds[3]));
-            farmCoords.Add(new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]));
+            Bitmap farm = new Bitmap("Assets\\Farm-mini.png");
+            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
 
+            foreach (var f in farmMiniatures)
+            {
+                f.HighlightOn = false;
+                Clickables.Add(f);
+            }
+
+            // Initialize buttons
             ArrowButton = new SceneSwitchButton(new Bitmap("Assets\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), FarmerLibrary.View.RoadView);
             ArrowButton.EnableStamina();
             Clickables.Add(ArrowButton);
@@ -113,22 +120,6 @@ namespace FarmerGraphics
             CoopButton.HighlightOn = false;
             Clickables.Add(CoopButton);
 
-        }
-
-        public override void HandleClick(double X, double Y, GameState state)
-        {
-            base.HandleClick(X, Y, state);
-
-            // See if inside a farm
-            for (uint i = 0; i < farmCoords.Count; i++)
-            {
-                if (farmCoords[(int)i].InArea(X, Y))
-                {
-                    state.CurrentView = FarmerLibrary.View.FarmView;
-                    state.SetFarm(i);
-                    break;
-                }
-            }
         }
     }
 

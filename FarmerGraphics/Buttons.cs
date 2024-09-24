@@ -127,8 +127,9 @@ namespace FarmerGraphics
         }
     }
 
+
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-    public sealed class SceneSwitchButton : GameButton
+    public class SceneSwitchButton : GameButton
     {
         private readonly FarmerLibrary.View Destination;
         private bool takesStamina = false;
