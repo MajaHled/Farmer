@@ -1,7 +1,8 @@
-﻿namespace FarmerLibrary
+﻿using System.Diagnostics.Tracing;
+
+namespace FarmerLibrary
 {
     public enum View { FullView, FarmView, CoopView, HouseView, RoadView, SeedShopView, ChickShopView }
-
 
     public class GameState
     {
@@ -100,7 +101,7 @@
         public bool CanWork() => Stamina >= STAMINA_STEP;
         
         // Events
-        private DayEventHandler EventHandler = new();
+        private DayEventHandler EventHandler;
         public List<DayEvent> TodaysEvents { get; private set; } = [];
 
         // Challenges
@@ -129,7 +130,7 @@
             CurrentCoopIndex = 0;
         }
 
-        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney, uint actionsPerDay, double eventChance, ChallengeHandler handler)
+        public GameState(uint numFarms, uint farmRows, uint farmCols, uint numCoops, uint coopCapacity, View startView, uint playerMoney, uint actionsPerDay, DayEventHandler eventHandler, ChallengeHandler challengeHandler)
         {
             for (int i = 0; i < numFarms; i++)
             {
@@ -146,10 +147,8 @@
 
             STAMINA_STEP = 1 / (double) actionsPerDay;
 
-            EventHandler.AddEvent(new WormEvent(eventChance, 0.5));
-            EventHandler.AddEvent(new RainEvent(eventChance));
-
-            ChallengeHandler = handler;
+            ChallengeHandler = challengeHandler;
+            EventHandler = eventHandler;
         }
 
         public void EndDay()
@@ -170,7 +169,12 @@
 
         public static GameState GetClassicStartingState()
         {
-            return new GameState(4, 3, 4, 1, 5, View.FullView, 10000, 160, 0.1, new DefaultChallengeHandler());
+            var eventHandler = new DayEventHandler();
+
+            eventHandler.AddEvent(new WormEvent(0.1, 0.5));
+            eventHandler.AddEvent(new RainEvent(0.1));
+
+            return new GameState(4, 3, 4, 1, 5, View.FullView, 100, 110, eventHandler, new DefaultChallengeHandler());
         }
     }
 

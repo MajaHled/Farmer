@@ -4,6 +4,7 @@
     {
         protected List<Challenge> Challenges = new List<Challenge>();
         public List<Challenge> GetChallengeList() => new List<Challenge>(Challenges);
+
         // Number of active challenges.
         // Challenges further down the list will be ignored for evaluation until space before them frees up
         // If null, all challenges in the list are considered.
