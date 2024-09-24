@@ -259,11 +259,11 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class EggButton : GameButton, IClickable // Reimplement to get the new Draw() method
     {
-        private EggSpot Spot;
+        private int Index;
 
-        public EggButton(Bitmap icon, RelativePosition position, EggSpot spot) : base(icon, position)
+        public EggButton(Bitmap icon, RelativePosition position, int index) : base(icon, position)
         {
-            Spot = spot;
+            Index = index;
             HighlightOn = false;
         }
 
@@ -272,7 +272,7 @@ namespace FarmerGraphics
             if (Position is null)
                 throw new InvalidOperationException("Cannot draw button with uninitialized position.");
 
-            else if (Position is RelativePosition p && Enabled && Spot.HasEgg())
+            else if (Position is RelativePosition p && Enabled && state.CurrentCoop.GetEggSpots()[Index].HasEgg())
                 g.DrawImage(Icon, p.GetAbsolute(width, height));
         }
 
@@ -280,7 +280,7 @@ namespace FarmerGraphics
         {
             if (state.CurrentTool is Tool t && state.HeldProduct is null)
             {
-                t.Use(state, Spot);
+                t.Use(state, state.CurrentCoop.GetEggSpots()[Index]);
                 return true;
             }
             return false;

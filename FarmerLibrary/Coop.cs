@@ -16,6 +16,9 @@
             Capacity = chickenSlots;
             Feeder = new ChickenFeeder(chickenSlots);
             Spots = new List<EggSpot>((int)chickenSlots);
+
+            for (int i = 0; i < Capacity; i++)
+                Spots.Add(new EggSpot());
         }
 
         public void AddChicken(Chicken chicken)
@@ -24,7 +27,6 @@
                 throw new InvalidOperationException($"Cannot add more chickens, coop is already at capacity of {Capacity}.");
 
             Chickens.Add(chicken);
-            Spots.Add(new EggSpot());
         }
 
         public override void EndDay()

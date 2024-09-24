@@ -170,7 +170,7 @@
 
         public static GameState GetClassicStartingState()
         {
-            return new GameState(4, 3, 4, 1, 5, View.FullView, 100, 160, 0.1, new DefaultChallengeHandler());
+            return new GameState(4, 3, 4, 1, 5, View.FullView, 10000, 160, 0.1, new DefaultChallengeHandler());
         }
     }
 

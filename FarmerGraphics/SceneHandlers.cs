@@ -1,4 +1,5 @@
 ﻿using FarmerLibrary;
+using static System.Windows.Forms.AxHost;
 
 namespace FarmerGraphics
 {
@@ -414,7 +415,7 @@ namespace FarmerGraphics
             // Controls
             BackButton = new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new RelativePosition(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView);
             Clickables.Add(BackButton);
-
+            
             // Initialize feeder positions
             var feederCoords = new RelativePosition[5];
             feederCoords[0] = new RelativePosition(0.24, 0.327, 0.4, 0.72);
@@ -426,12 +427,24 @@ namespace FarmerGraphics
                                              new Bitmap("Assets\\Feed.png"),
                                              new RelativePosition(0.24, 0.64, 0.4, 0.72),
                                              feederCoords));
+
+            // Initialize chicken positions
+            for (int i = 0; i < 5; i++)
+            {
+                ChickenPositions.Add(GetNewPosition());
+                EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewPosition(), i));
+                Clickables.Add(EggSpots[i]);
+            }
+            ChickenPositions.Sort(Comparer<RelativePosition>.Create((p1, p2) => p1.Y1.CompareTo(p2.Y1)));
+
+
             Clickables.Add(ToolMenu);
 
             HarvestHouse = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new RelativePosition(0.04, 0.18, 0.59, 0.91));
             Clickables.Add(HarvestHouse);
             Clickables.Add(ExitButton);
 
+            // Add enable/disable behavior
             ExitButton.ToEnable.Add(BackButton);
             ToolMenu.AddToDisable(BackButton);
             HarvestHouse.ToEnable.Add(BackButton);
@@ -452,7 +465,7 @@ namespace FarmerGraphics
             }
 
             // Initialize new chicken and egg positions if needed
-            for (int i = ChickenPositions.Count; i < state.CurrentCoop.ChickenCount; i++)
+            /*for (int i = ChickenPositions.Count; i < state.CurrentCoop.ChickenCount; i++)
             {
                 ChickenPositions.Add(GetNewPosition());
                 // Sort by Y position, so that higher chickens are further back
@@ -460,7 +473,7 @@ namespace FarmerGraphics
 
                 EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewPosition(), state.CurrentCoop.GetEggSpots()[i]));
                 Clickables.Add(EggSpots[i]);
-            }
+            }*/
 
             base.Draw(g, state, absoluteWidth, absoluteHeight);
 

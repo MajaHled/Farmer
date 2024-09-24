@@ -198,7 +198,7 @@ namespace FarmerGraphics
 // housekeeping (TODOs)
 // Presentation
 // Testing
-// Saving (+ better chicken and egg rendering)
+// Saving
 // melons (fix menu)
 // comments
 // Enumerable farms
