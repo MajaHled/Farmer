@@ -76,7 +76,7 @@ namespace FarmerGraphics
         public bool ShowPrice { get; set; } = true;
 
         public ProductTextDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
-        public ProductTextDisplay(Seed product, Bitmap background, ProportionalRectangle position) : base(background, position)
+        public ProductTextDisplay(IBuyable product, Bitmap background, ProportionalRectangle position) : base(background, position)
         {
             Product = product;
         }
@@ -91,6 +91,39 @@ namespace FarmerGraphics
                     return $"{b.Name}: owned {amount}, price ${price}";
                 else
                     return $"{b.Name}: owned {amount}";
+            }
+            return "";
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class PointsDisplay : TextDisplay
+    {
+        public PointsDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
+
+        protected override string GenerateText(GameState state)
+        {
+            return $"{state.Points} pts";
+        }
+    }
+
+    public class ChallengeDisplay : TextDisplay
+    {
+        private Challenge? Challenge;
+
+        public void SetChallenge(Challenge challenge) => Challenge = challenge;
+        public void UnsetChallenge() => Challenge = null;
+
+        public ChallengeDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
+        public ChallengeDisplay(Challenge challenge, Bitmap background, ProportionalRectangle position) : base(background, position)
+        {
+            Challenge = challenge;
+        }
+        protected override string GenerateText(GameState state)
+        {
+            if (Challenge is Challenge c)
+            {
+                return $"{c.ChallengeText}\nPoints: {c.Reward}";
             }
             return "";
         }

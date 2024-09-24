@@ -197,5 +197,5 @@ namespace FarmerGraphics
 // TODO plan:
 // challenges
 // housekeeping (TODOs)
-// Docs
 // Presentation
+// IF: saving, melons, comments, clickable

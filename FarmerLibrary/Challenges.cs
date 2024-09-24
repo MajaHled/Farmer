@@ -20,6 +20,14 @@
             }
             return reward;
         }
+
+        public void LogDayEnd(GameState state)
+        {
+            foreach (Challenge c in Challenges)
+                c.LogDayEnd(state);
+        }
+
+        public virtual void ReplenishChallenges() { }
     }
 
     public class DefaultChallengeHandler : ChallengeHandler
@@ -39,7 +47,10 @@
         public Challenge(int reward) => Reward = reward;
 
         public abstract bool CheckFinished(GameState state);
-        public abstract string ChallengeText();
+
+        public abstract string ChallengeText { get; }
+
+
         public virtual void LogDayEnd(GameState state) { }
     }
 
@@ -52,7 +63,7 @@
             MoneyGoal = moneyGoal;
         }
 
-        public override string ChallengeText() => $"Have over ${MoneyGoal}.";
+        public override string ChallengeText => $"Have over ${MoneyGoal}.";
 
         public override bool CheckFinished(GameState state) => state.PlayerMoney >= MoneyGoal;
     }
@@ -70,7 +81,7 @@
             Goal = number;
         }
 
-        public override string ChallengeText() => $"See {Event} {Goal} times.";
+        public override string ChallengeText => $"See {Event.Name} {Goal} times.";
 
         public override bool CheckFinished(GameState state) => Seen >= Goal;
 
@@ -92,7 +103,7 @@
             Goal = number;
         }
 
-        public override string ChallengeText() => $"Have {Goal} chickens.";
+        public override string ChallengeText => $"Have {Goal} chickens.";
 
         public override bool CheckFinished(GameState state) => state.CurrentCoop.ChickenCount >= Goal;
     }

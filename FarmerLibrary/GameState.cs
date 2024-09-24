@@ -106,7 +106,7 @@
         public List<DayEvent> TodaysEvents { get; private set; } = [];
 
         // Challenges
-        private ChallengeHandler ChallengeHandler;
+        public ChallengeHandler ChallengeHandler { get; init; }
         public List<Challenge> GetChallengeList() => new List<Challenge>(ChallengeHandler.GetChallengeList());
         public int Points { get; private set; } = 0;
 
@@ -153,12 +153,13 @@
 
             TodaysEvents = EventHandler.TryEvents(this);
 
+            ChallengeHandler.LogDayEnd(this);
             Points += ChallengeHandler.CheckChallenges(this);
         }
 
         public static GameState GetClassicStartingState()
         {
-            return new GameState(4, 3, 4, 1, 5, View.FullView, 100, 160, 0.1, new DefaultChallengeHandler());
+            return new GameState(4, 3, 4, 1, 5, View.FullView, 100, 160, 1, new DefaultChallengeHandler());
         }
     }
 

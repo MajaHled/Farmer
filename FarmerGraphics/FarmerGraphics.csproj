@@ -67,6 +67,9 @@
     <None Update="Assets\Center-menu.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Challenge.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Chicken.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

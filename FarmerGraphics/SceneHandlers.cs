@@ -496,12 +496,18 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class HouseSceneHandler : SceneHandler
     {
+        private ChallengeBoard Board;
         public HouseSceneHandler()
         {
             Background = new Bitmap("Assets\\House.png");
 
             Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView));
             Clickables.Add(new NewDayButton(new Bitmap("Assets\\New-day.png"), new ProportionalRectangle(0.02, 0.14, 0.12, 0.35)));
+
+            TopIcons.Add(new PointsDisplay(new Bitmap("Assets\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.8, 0.91)));
+
+            Board = new ChallengeBoard(new Bitmap("Assets\\Center-menu.png"), new Bitmap("Assets\\Challenge.png"), new ProportionalRectangle(0.16, 0.84, 0.1, 0.9), 0.05);
+            TopIcons.Add(Board);
         }
     }
 }

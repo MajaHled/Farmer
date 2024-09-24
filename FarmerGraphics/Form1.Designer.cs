@@ -51,7 +51,7 @@
             Controls.Add(panel1);
             MinimumSize = new Size(974, 585);
             Name = "Farmer";
-            Text = "Form1";
+            Text = "Farmer";
             Load += Form1_Load;
             ResumeLayout(false);
         }

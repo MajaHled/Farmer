@@ -1,4 +1,5 @@
 ﻿using FarmerLibrary;
+using System.Windows.Forms;
 
 namespace FarmerGraphics
 {
@@ -83,6 +84,48 @@ namespace FarmerGraphics
             foreach (var e in state.TodaysEvents)
                 if (Visuals.ContainsKey(e.GetType()))
                     g.DrawImage(Visuals[e.GetType()], 0, 0, width, height);
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public class ChallengeBoard : IDrawable
+    {
+        private Bitmap Background, ChallengeBackground;
+        private ProportionalRectangle Position;
+        private List<ChallengeDisplay> Displays = new();
+        private double Padding;
+
+        public ChallengeBoard(Bitmap background, Bitmap challengeBackground, ProportionalRectangle position, double padding)
+        {
+            Background = background;
+            ChallengeBackground = challengeBackground;
+            Position = position;
+            Padding = padding;
+        }
+
+        private void UpdateChallenges(ChallengeHandler handler)
+        {
+            Displays.Clear();
+
+            double lastY = Position.Y1 + Padding;
+            double width = ((Position.Y2 - Position.Y1 - Padding) / handler.GetChallengeList().Count) - Padding;
+            foreach (Challenge c in handler.GetChallengeList())
+            {
+                var p = new ProportionalRectangle(Position.X1 + Padding, Position.X2 - Padding, lastY, lastY + width);
+                Displays.Add(new ChallengeDisplay(c, ChallengeBackground, p));
+                lastY = lastY + width + Padding;
+            }
+
+        }
+
+        public void Draw(Graphics g, GameState state, int width, int height)
+        {
+            g.DrawImage(Background, Position.GetAbsolute(width, height));
+
+            UpdateChallenges(state.ChallengeHandler);
+
+            foreach (ChallengeDisplay d in Displays)
+                d.Draw(g, state, width, height);
         }
     }
 
