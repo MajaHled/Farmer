@@ -96,10 +96,10 @@ namespace FarmerGraphics
             double[] YBounds = { 0.368, 0.66, 0.694, 0.984 };
 
             Bitmap farm = new Bitmap("Assets\\Farm-mini.png");
-            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
-            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
-            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[0], XBounds[1], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
-            farmMiniatures.Add(new SceneSwitchButton(farm, new ProportionalRectangle(XBounds[2], XBounds[3], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[0], XBounds[1], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[2], XBounds[3], YBounds[0], YBounds[1]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[0], XBounds[1], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
+            farmMiniatures.Add(new SceneSwitchButton(farm, new RelativePosition(XBounds[2], XBounds[3], YBounds[2], YBounds[3]), FarmerLibrary.View.FarmView));
 
             foreach (var f in farmMiniatures)
             {
@@ -108,15 +108,15 @@ namespace FarmerGraphics
             }
 
             // Initialize buttons
-            ArrowButton = new SceneSwitchButton(new Bitmap("Assets\\ArrowMain.png"), new ProportionalRectangle(0.48, 0.52, 0.84, 0.99), FarmerLibrary.View.RoadView);
+            ArrowButton = new SceneSwitchButton(new Bitmap("Assets\\ArrowMain.png"), new RelativePosition(0.48, 0.52, 0.84, 0.99), FarmerLibrary.View.RoadView);
             ArrowButton.EnableStamina();
             Clickables.Add(ArrowButton);
 
-            HouseButton = new SceneSwitchButton(new Bitmap("Assets\\Coop-button.png"), new ProportionalRectangle(0.77, 0.94, 0.13, 0.352), FarmerLibrary.View.CoopView);
+            HouseButton = new SceneSwitchButton(new Bitmap("Assets\\Coop-button.png"), new RelativePosition(0.77, 0.94, 0.13, 0.352), FarmerLibrary.View.CoopView);
             HouseButton.HighlightOn = false;
             Clickables.Add(HouseButton);
 
-            CoopButton = new SceneSwitchButton(new Bitmap("Assets\\House-button.png"), new ProportionalRectangle(0.39, 0.61, 0.01, 0.352), FarmerLibrary.View.HouseView);
+            CoopButton = new SceneSwitchButton(new Bitmap("Assets\\House-button.png"), new RelativePosition(0.39, 0.61, 0.01, 0.352), FarmerLibrary.View.HouseView);
             CoopButton.HighlightOn = false;
             Clickables.Add(CoopButton);
 
@@ -216,7 +216,7 @@ namespace FarmerGraphics
 
             // Initialize menus:
             // Toolbar
-            ToolMenu = new ToolMenuHandler(new Bitmap("Assets\\Toolbar.png"), new ProportionalRectangle(0.31, 0.97, 0.82, 0.98));
+            ToolMenu = new ToolMenuHandler(new Bitmap("Assets\\Toolbar.png"), new RelativePosition(0.31, 0.97, 0.82, 0.98));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Pail)), new Pail()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bag)), new Bag()));
@@ -225,15 +225,15 @@ namespace FarmerGraphics
 
             ToolMenu.RepositionButtons(0.08, 0.14, 0.02, 0.01);
 
-            ToolExitButton = new ToolExitButton(ToolMenu, new Bitmap("Assets\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
+            ToolExitButton = new ToolExitButton(ToolMenu, new Bitmap("Assets\\Exit.png"), new RelativePosition(0.87, 0.97, 0.81, 0.99));
             ToolExitButton.Disable();
             ToolMenu.SetExitButton(ToolExitButton);
 
             // Planting menu
-            Text = new ProductTextDisplay(new Bitmap("Assets\\Plant-text.png"), new ProportionalRectangle(0.22, 0.79, 0.71, 0.86));
+            Text = new ProductTextDisplay(new Bitmap("Assets\\Plant-text.png"), new RelativePosition(0.22, 0.79, 0.71, 0.86));
             Text.ShowPrice = false;
 
-            PlantMenu = new MenuHandler(new Bitmap("Assets\\Center-menu.png"), new ProportionalRectangle(0.16, 0.84, 0.10, 0.90));
+            PlantMenu = new MenuHandler(new Bitmap("Assets\\Center-menu.png"), new RelativePosition(0.16, 0.84, 0.10, 0.90));
             AddSeed(FruitAssets.GetImage(typeof(RaddishFruit)), new RaddishSeed());
             AddSeed(FruitAssets.GetImage(typeof(CarrotFruit)), new CarrotSeed());
             AddSeed(FruitAssets.GetImage(typeof(TomatoFruit)), new TomatoSeed());
@@ -242,23 +242,23 @@ namespace FarmerGraphics
             PlantMenu.SetTextDisplay(Text);
 
             // Initialize buttons:
-            HarvestButton = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
-            BackButton = new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView);
-            PlantMenuButton = new PlantMenuButton(new Bitmap("Assets\\Planting-plant.png"), new ProportionalRectangle(0.01, 0.20, 0.18, 0.44), PlantMenu);
-            PlantMenuExitButton = new MenuExitButton(PlantMenu, new Bitmap("Assets\\Exit.png"), new ProportionalRectangle(0.82, 0.91, 0.1, 0.25));
+            HarvestButton = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new RelativePosition(0.04, 0.18, 0.59, 0.91));
+            BackButton = new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new RelativePosition(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView);
+            PlantMenuButton = new PlantMenuButton(new Bitmap("Assets\\Planting-plant.png"), new RelativePosition(0.01, 0.20, 0.18, 0.44), PlantMenu);
+            PlantMenuExitButton = new MenuExitButton(PlantMenu, new Bitmap("Assets\\Exit.png"), new RelativePosition(0.82, 0.91, 0.1, 0.25));
             PlantMenu.SetExitButton(PlantMenuExitButton);
 
             PlantMenu.Disable();
 
             // Initialize farm plots:
-            var plotCoords = new ProportionalRectangle[3, 4];
+            var plotCoords = new RelativePosition[3, 4];
             double[] XBounds = [0.209, 0.395, 0.585, 0.773, 0.96];
             double[] YBounds = [0.07, 0.315, 0.57, 0.81];
             for (int i = 0; i < plotCoords.GetLength(0); i++)
             {
                 for (int j = 0; j < plotCoords.GetLength(1); j++)
                 {
-                    plotCoords[i, j] = new ProportionalRectangle(XBounds[j], XBounds[j + 1], YBounds[i], YBounds[i + 1]);
+                    plotCoords[i, j] = new RelativePosition(XBounds[j], XBounds[j + 1], YBounds[i], YBounds[i + 1]);
                 }
             }
 
@@ -350,17 +350,17 @@ namespace FarmerGraphics
             // Load assets
             Background = new Bitmap("Assets\\Shops-background.png");
 
-            SeedShop = new SceneSwitchButton(new Bitmap("Assets\\ShopHouse.png"), new ProportionalRectangle(0.06, 0.37, 0.09, 0.79), FarmerLibrary.View.SeedShopView);
+            SeedShop = new SceneSwitchButton(new Bitmap("Assets\\ShopHouse.png"), new RelativePosition(0.06, 0.37, 0.09, 0.79), FarmerLibrary.View.SeedShopView);
             SeedShop.HighlightOn = false;
-            ChickShop = new SceneSwitchButton(new Bitmap("Assets\\ShopHouse.png"), new ProportionalRectangle(0.63, 0.94, 0.09, 0.79), FarmerLibrary.View.ChickShopView);
+            ChickShop = new SceneSwitchButton(new Bitmap("Assets\\ShopHouse.png"), new RelativePosition(0.63, 0.94, 0.09, 0.79), FarmerLibrary.View.ChickShopView);
             ChickShop.HighlightOn = false;
 
             Clickables.Add(SeedShop);
             Clickables.Add(ChickShop);
-            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shops.png"), new ProportionalRectangle(0.45, 0.56, 0.07, 0.33), FarmerLibrary.View.FullView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shops.png"), new RelativePosition(0.45, 0.56, 0.07, 0.33), FarmerLibrary.View.FullView));
 
-            TopIcons.Add(new BasicTextDisplay("Seed shop", new Bitmap("Assets\\Shop-sign.png"), new ProportionalRectangle(0.11, 0.32, 0.42, 0.55)));
-            TopIcons.Add(new BasicTextDisplay("Chicken shop", new Bitmap("Assets\\Shop-sign.png"), new ProportionalRectangle(0.68, 0.89, 0.42, 0.55)));
+            TopIcons.Add(new BasicTextDisplay("Seed shop", new Bitmap("Assets\\Shop-sign.png"), new RelativePosition(0.11, 0.32, 0.42, 0.55)));
+            TopIcons.Add(new BasicTextDisplay("Chicken shop", new Bitmap("Assets\\Shop-sign.png"), new RelativePosition(0.68, 0.89, 0.42, 0.55)));
         }
     }
 
@@ -373,7 +373,7 @@ namespace FarmerGraphics
 
         // Chicken and egg rendering
         private Bitmap Chicken;
-        private List<ProportionalRectangle> ChickenPositions = new();
+        private List<RelativePosition> ChickenPositions = new();
         private List<EggButton> EggSpots = new();
 
         // Menus
@@ -401,25 +401,34 @@ namespace FarmerGraphics
             Cursor.SetSellableIcons(EggAssets);
 
             // Menu
-            ToolMenu = new ToolMenuHandler(new Bitmap("Assets\\Coop-menu.png"), new ProportionalRectangle(0.32, 0.59, 0.11, 0.27));
+            ToolMenu = new ToolMenuHandler(new Bitmap("Assets\\Coop-menu.png"), new RelativePosition(0.32, 0.59, 0.11, 0.27));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Hand)), new Hand()));
             ToolMenu.Add(new ToolButton(ToolIconLoader.GetImage(typeof(Bag)), new Bag()));
 
             ToolMenu.RepositionButtons(0.069, 0.12, 0.02, 0.01);
 
-            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("Assets\\Exit.png"), new ProportionalRectangle(0.87, 0.97, 0.81, 0.99));
+            ExitButton = new ToolExitButton(ToolMenu, new Bitmap("Assets\\Exit.png"), new RelativePosition(0.87, 0.97, 0.81, 0.99));
             ExitButton.Disable();
             ToolMenu.SetExitButton(ExitButton);
 
             // Controls
-            BackButton = new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView);
+            BackButton = new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new RelativePosition(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView);
             Clickables.Add(BackButton);
+
+            // Initialize feeder positions
+            var feederCoords = new RelativePosition[5];
+            feederCoords[0] = new RelativePosition(0.24, 0.327, 0.4, 0.72);
+            feederCoords[1] = new RelativePosition(0.312, 0.40, 0.4, 0.72);
+            feederCoords[2] = new RelativePosition(0.385, 0.472, 0.4, 0.72);
+            feederCoords[3] = new RelativePosition(0.457, 0.544, 0.4, 0.72);
+            feederCoords[4] = new RelativePosition(0.529, 0.616, 0.4, 0.72);
             Clickables.Add(new FeederDisplay(new Bitmap("Assets\\Feeder.png"),
                                              new Bitmap("Assets\\Feed.png"),
-                                             new ProportionalRectangle(0.24, 0.64, 0.4, 0.72)));
+                                             new RelativePosition(0.24, 0.64, 0.4, 0.72),
+                                             feederCoords));
             Clickables.Add(ToolMenu);
 
-            HarvestHouse = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new ProportionalRectangle(0.04, 0.18, 0.59, 0.91));
+            HarvestHouse = new HarvestButton(new Bitmap("Assets\\Harvest-house.png"), new RelativePosition(0.04, 0.18, 0.59, 0.91));
             Clickables.Add(HarvestHouse);
             Clickables.Add(ExitButton);
 
@@ -447,7 +456,7 @@ namespace FarmerGraphics
             {
                 ChickenPositions.Add(GetNewPosition());
                 // Sort by Y position, so that higher chickens are further back
-                ChickenPositions.Sort(Comparer<ProportionalRectangle>.Create((p1, p2) => p1.Y1.CompareTo(p2.Y1)));
+                ChickenPositions.Sort(Comparer<RelativePosition>.Create((p1, p2) => p1.Y1.CompareTo(p2.Y1)));
 
                 EggSpots.Add(new EggButton(EggAssets.GetImage(typeof(Egg)), GetNewPosition(), state.CurrentCoop.GetEggSpots()[i]));
                 Clickables.Add(EggSpots[i]);
@@ -465,14 +474,14 @@ namespace FarmerGraphics
             Cursor.Draw(g, state, absoluteWidth, absoluteHeight);
         }
 
-        private ProportionalRectangle GetNewPosition()
+        private RelativePosition GetNewPosition()
         {
             var x1 = rnd.NextDouble() * 0.79;
             var x2 = x1 + 0.11;
             var y1 = 1 - rnd.NextDouble() * 0.3 - 0.2;
             var y2 = y1 + 0.2;
 
-            return new ProportionalRectangle(x1, x2, y1, y2);
+            return new RelativePosition(x1, x2, y1, y2);
         }
     }
 
@@ -486,12 +495,12 @@ namespace FarmerGraphics
         {
             Background = new Bitmap("Assets\\Shop.png");
 
-            ShoppingMenu = new MenuHandler(new Bitmap("Assets\\Shop-menu.png"), new ProportionalRectangle(0.06, 0.69, 0.13, 0.87));
+            ShoppingMenu = new MenuHandler(new Bitmap("Assets\\Shop-menu.png"), new RelativePosition(0.06, 0.69, 0.13, 0.87));
 
-            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shop.png"), new ProportionalRectangle(0.79, 0.98, 0.01, 0.18), FarmerLibrary.View.RoadView));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Arrow-shop.png"), new RelativePosition(0.79, 0.98, 0.01, 0.18), FarmerLibrary.View.RoadView));
             Clickables.Add(ShoppingMenu);
 
-            Text = new ProductTextDisplay(new Bitmap("Assets\\Text-display.png"), new ProportionalRectangle(0.11, 0.65, 0.66, 0.8));
+            Text = new ProductTextDisplay(new Bitmap("Assets\\Text-display.png"), new RelativePosition(0.11, 0.65, 0.66, 0.8));
 
             ShoppingMenu.SetTextDisplay(Text);
         }
@@ -513,12 +522,12 @@ namespace FarmerGraphics
         {
             Background = new Bitmap("Assets\\House.png");
 
-            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new ProportionalRectangle(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView));
-            Clickables.Add(new NewDayButton(new Bitmap("Assets\\New-day.png"), new ProportionalRectangle(0.02, 0.14, 0.12, 0.35)));
+            Clickables.Add(new SceneSwitchButton(new Bitmap("Assets\\Back-arrow.png"), new RelativePosition(0.88, 0.965, 0.82, 0.975), FarmerLibrary.View.FullView));
+            Clickables.Add(new NewDayButton(new Bitmap("Assets\\New-day.png"), new RelativePosition(0.02, 0.14, 0.12, 0.35)));
 
-            TopIcons.Add(new PointsDisplay(new Bitmap("Assets\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.8, 0.91)));
+            TopIcons.Add(new PointsDisplay(new Bitmap("Assets\\Money.png"), new RelativePosition(0.01, 0.14, 0.8, 0.91)));
 
-            Board = new ChallengeBoard(new Bitmap("Assets\\Center-menu.png"), new Bitmap("Assets\\Challenge.png"), new ProportionalRectangle(0.16, 0.84, 0.1, 0.9), 3, 0.05);
+            Board = new ChallengeBoard(new Bitmap("Assets\\Center-menu.png"), new Bitmap("Assets\\Challenge.png"), new RelativePosition(0.16, 0.84, 0.1, 0.9), 3, 0.05);
             TopIcons.Add(Board);
         }
     }

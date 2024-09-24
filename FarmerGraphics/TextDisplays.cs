@@ -6,12 +6,12 @@ namespace FarmerGraphics
     public abstract class TextDisplay : IDrawable
     {
         protected Bitmap Background;
-        protected ProportionalRectangle Position;
+        protected RelativePosition Position;
         protected StringFormat Format = new StringFormat();
         protected Font Font = new Font("Arial", 16);
         protected Brush Brush = new SolidBrush(Color.Black);
 
-        public TextDisplay(Bitmap background, ProportionalRectangle position)
+        public TextDisplay(Bitmap background, RelativePosition position)
         {
             Background = background;
             Position = position;
@@ -40,8 +40,8 @@ namespace FarmerGraphics
     public class BasicTextDisplay : TextDisplay
     {
         private string Text { get; set; } = "";
-        public BasicTextDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
-        public BasicTextDisplay(string text, Bitmap background, ProportionalRectangle position) : base(background, position)
+        public BasicTextDisplay(Bitmap background, RelativePosition position) : base(background, position) { }
+        public BasicTextDisplay(string text, Bitmap background, RelativePosition position) : base(background, position)
         {
             Text = text;
         }
@@ -52,7 +52,7 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class MoneyDisplay : TextDisplay
     {
-        public MoneyDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
+        public MoneyDisplay(Bitmap background, RelativePosition position) : base(background, position) { }
 
         protected override string GenerateText(GameState state)
         {
@@ -75,8 +75,8 @@ namespace FarmerGraphics
 
         public bool ShowPrice { get; set; } = true;
 
-        public ProductTextDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
-        public ProductTextDisplay(IBuyable product, Bitmap background, ProportionalRectangle position) : base(background, position)
+        public ProductTextDisplay(Bitmap background, RelativePosition position) : base(background, position) { }
+        public ProductTextDisplay(IBuyable product, Bitmap background, RelativePosition position) : base(background, position)
         {
             Product = product;
         }
@@ -99,7 +99,7 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class PointsDisplay : TextDisplay
     {
-        public PointsDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
+        public PointsDisplay(Bitmap background, RelativePosition position) : base(background, position) { }
 
         protected override string GenerateText(GameState state)
         {
@@ -114,8 +114,8 @@ namespace FarmerGraphics
         public void SetChallenge(Challenge challenge) => Challenge = challenge;
         public void UnsetChallenge() => Challenge = null;
 
-        public ChallengeDisplay(Bitmap background, ProportionalRectangle position) : base(background, position) { }
-        public ChallengeDisplay(Challenge challenge, Bitmap background, ProportionalRectangle position) : base(background, position)
+        public ChallengeDisplay(Bitmap background, RelativePosition position) : base(background, position) { }
+        public ChallengeDisplay(Challenge challenge, Bitmap background, RelativePosition position) : base(background, position)
         {
             Challenge = challenge;
         }

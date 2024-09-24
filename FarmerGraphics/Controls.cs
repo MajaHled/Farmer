@@ -18,7 +18,7 @@ namespace FarmerGraphics
         public List<GameButton> GetButtonsList() => new List<GameButton>(Buttons);
 
         private Bitmap Background;
-        public ProportionalRectangle BackgroundPosition { get; init; }
+        public RelativePosition BackgroundPosition { get; init; }
 
         private MenuExitButton? ExitButton;
 
@@ -26,7 +26,7 @@ namespace FarmerGraphics
 
         public bool Enabled { get; private set; }
 
-        public MenuHandler(Bitmap background, ProportionalRectangle backgroundPosition)
+        public MenuHandler(Bitmap background, RelativePosition backgroundPosition)
         {
             Background = background;
             BackgroundPosition = backgroundPosition;
@@ -73,7 +73,7 @@ namespace FarmerGraphics
                 if (!button.Enabled)
                     continue;
 
-                button.SetPosition(new ProportionalRectangle(startX, startX + width, startY, startY + height));
+                button.SetPosition(new RelativePosition(startX, startX + width, startY, startY + height));
                 startX += width + gap;
 
                 if (startX + width + padding > BackgroundPosition.X2)
@@ -145,7 +145,7 @@ namespace FarmerGraphics
     public class ToolMenuHandler : MenuHandler
     {
         private ToolExitButton? exit;
-        public ToolMenuHandler(Bitmap background, ProportionalRectangle backgroundPosition) : base(background, backgroundPosition) { }
+        public ToolMenuHandler(Bitmap background, RelativePosition backgroundPosition) : base(background, backgroundPosition) { }
 
         public void SetExitButton(ToolExitButton exitButton)
         {
@@ -165,12 +165,12 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class FarmDisplay : IClickable
     {
-        private ProportionalRectangle[,] PlotCoords;
+        private RelativePosition[,] PlotCoords;
         private PlotStatesLoader PlotStates; 
         private PlantStatesLoader PlantStates;
         private Bitmap Worm, Dead;
 
-        public FarmDisplay(PlantStatesLoader plantStates, PlotStatesLoader plotStates, Bitmap worm, Bitmap dead, ProportionalRectangle[,] plotCoords)
+        public FarmDisplay(PlantStatesLoader plantStates, PlotStatesLoader plotStates, Bitmap worm, Bitmap dead, RelativePosition[,] plotCoords)
         {
             Enabled = true;
             PlantStates = plantStates;
@@ -283,26 +283,18 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class FeederDisplay : IClickable
     {
-        private ProportionalRectangle[] feederCoords;
         private Bitmap Feed, Background;
-
-        public ProportionalRectangle BackgroundPosition { get; init; }
+        private RelativePosition BackgroundPosition;
+        private RelativePosition[] FeederCoords;
 
         public bool Enabled { get; private set; }
 
-        public FeederDisplay(Bitmap background, Bitmap feed, ProportionalRectangle backgroundPosition)
+        public FeederDisplay(Bitmap background, Bitmap feed, RelativePosition backgroundPosition, RelativePosition[] feederCoords)
         {
             Background = background;
             Feed = feed;
             BackgroundPosition = backgroundPosition;
-
-            //TODO hardcoded
-            feederCoords = new ProportionalRectangle[5];
-            feederCoords[0] = new ProportionalRectangle(0.24, 0.327, 0.4, 0.72);
-            feederCoords[1] = new ProportionalRectangle(0.312, 0.40, 0.4, 0.72);
-            feederCoords[2] = new ProportionalRectangle(0.385, 0.472, 0.4, 0.72);
-            feederCoords[3] = new ProportionalRectangle(0.457, 0.544, 0.4, 0.72);
-            feederCoords[4] = new ProportionalRectangle(0.529, 0.616, 0.4, 0.72);
+            FeederCoords = feederCoords;
 
             Enabled = true;
         }
@@ -321,10 +313,10 @@ namespace FarmerGraphics
 
             for (int i = 0; i < state.CurrentCoop.Feeder.NumFilled; i++)
             {
-                if (i > feederCoords.Length)
-                    throw new InvalidOperationException($"Can't fill {i}th feeder, capacity is only {feederCoords.Length}.");
+                if (i > FeederCoords.Length)
+                    throw new InvalidOperationException($"Can't fill {i}th feeder, capacity is only {FeederCoords.Length}.");
 
-                g.DrawImage(Feed, feederCoords[i].GetAbsolute(width, height));
+                g.DrawImage(Feed, FeederCoords[i].GetAbsolute(width, height));
             }
         }
 

@@ -6,7 +6,7 @@ namespace FarmerGraphics
     public abstract class GameButton : IClickable
     {
         protected Bitmap Icon;
-        protected ProportionalRectangle? Position;
+        protected RelativePosition? Position;
 
         // Highlight behavior
         protected bool Highlighed = false;
@@ -18,7 +18,7 @@ namespace FarmerGraphics
 
         public bool Enabled { get; private set; }
 
-        public GameButton(Bitmap icon, ProportionalRectangle position)
+        public GameButton(Bitmap icon, RelativePosition position)
         {
             Icon = icon;
             Position = position;
@@ -36,7 +36,7 @@ namespace FarmerGraphics
             ToDisable = [];
         }
 
-        public void SetPosition(ProportionalRectangle position) => Position = position;
+        public void SetPosition(RelativePosition position) => Position = position;
 
         public void UnsetPosition() => Position = null;
 
@@ -49,11 +49,11 @@ namespace FarmerGraphics
             if (Position is null)
                 throw new InvalidOperationException("Cannot draw button with uninitialized position.");
 
-            else if (Position is ProportionalRectangle p && Enabled)
+            else if (Position is RelativePosition p && Enabled)
             {
                 if (Highlighed && HighlightOn)
                 {
-                    var temp = new ProportionalRectangle(p.X1 - HIGHLIGHT_MARGIN, p.X2 + HIGHLIGHT_MARGIN, p.Y1 - HIGHLIGHT_MARGIN, p.Y2 + HIGHLIGHT_MARGIN);
+                    var temp = new RelativePosition(p.X1 - HIGHLIGHT_MARGIN, p.X2 + HIGHLIGHT_MARGIN, p.Y1 - HIGHLIGHT_MARGIN, p.Y2 + HIGHLIGHT_MARGIN);
                     g.DrawImage(Icon, temp.GetAbsolute(width, height));
                 }
                 else
@@ -63,7 +63,7 @@ namespace FarmerGraphics
 
         public void Click(double x, double y, GameState state)
         {
-            if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
+            if (Enabled && Position is RelativePosition p && p.InArea(x, y))
             {
                 bool actionDone = Action(state);
                 if (!actionDone)
@@ -85,7 +85,7 @@ namespace FarmerGraphics
 
         public void Hover(double x, double y, GameState state)
         {
-            if (Enabled && Position is ProportionalRectangle p && p.InArea(x, y))
+            if (Enabled && Position is RelativePosition p && p.InArea(x, y))
             {
                 Highlighed = true;
                 HoverAction(state);
@@ -101,7 +101,7 @@ namespace FarmerGraphics
     public sealed class PlantMenuButton : GameButton
     {
         private MenuHandler PlantMenu;
-        public PlantMenuButton(Bitmap icon, ProportionalRectangle position, MenuHandler plantMenu) : base(icon, position)
+        public PlantMenuButton(Bitmap icon, RelativePosition position, MenuHandler plantMenu) : base(icon, position)
         {
             PlantMenu = plantMenu;
         }
@@ -119,7 +119,7 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class HarvestButton : GameButton
     {
-        public HarvestButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
+        public HarvestButton(Bitmap icon, RelativePosition position) : base(icon, position) { }
 
         protected override bool Action(GameState state)
         {
@@ -134,7 +134,7 @@ namespace FarmerGraphics
         private readonly FarmerLibrary.View Destination;
         private bool takesStamina = false;
 
-        public SceneSwitchButton(Bitmap icon, ProportionalRectangle position, FarmerLibrary.View destination) : base(icon, position)
+        public SceneSwitchButton(Bitmap icon, RelativePosition position, FarmerLibrary.View destination) : base(icon, position)
         {
             Destination = destination;
         }
@@ -164,7 +164,7 @@ namespace FarmerGraphics
     {
         private Tool? Tool;
 
-        public ToolButton(Bitmap icon, ProportionalRectangle position, Tool? tool) : base(icon, position)
+        public ToolButton(Bitmap icon, RelativePosition position, Tool? tool) : base(icon, position)
         {
             Tool = tool;
         }
@@ -188,7 +188,7 @@ namespace FarmerGraphics
         private Seed ToPlant;
         public ProductTextDisplay? Display;
 
-        public PlantButton(Bitmap icon, ProportionalRectangle position, Seed toPlant) : base(icon, position)
+        public PlantButton(Bitmap icon, RelativePosition position, Seed toPlant) : base(icon, position)
         {
             ToPlant = toPlant;
             HighlightOn = false;
@@ -218,7 +218,7 @@ namespace FarmerGraphics
         private IBuyable Product;
         private ProductTextDisplay? TextDisplay;
 
-        public BuyButton(Bitmap icon, ProportionalRectangle position, IBuyable product) : base(icon, position)
+        public BuyButton(Bitmap icon, RelativePosition position, IBuyable product) : base(icon, position)
         {
             Product = product;
             HighlightOn = false;
@@ -245,7 +245,7 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public sealed class NewDayButton : GameButton
     {
-        public NewDayButton(Bitmap icon, ProportionalRectangle position) : base(icon, position) { }
+        public NewDayButton(Bitmap icon, RelativePosition position) : base(icon, position) { }
 
         protected override bool Action(GameState state)
         {
@@ -261,7 +261,7 @@ namespace FarmerGraphics
     {
         private EggSpot Spot;
 
-        public EggButton(Bitmap icon, ProportionalRectangle position, EggSpot spot) : base(icon, position)
+        public EggButton(Bitmap icon, RelativePosition position, EggSpot spot) : base(icon, position)
         {
             Spot = spot;
             HighlightOn = false;
@@ -272,7 +272,7 @@ namespace FarmerGraphics
             if (Position is null)
                 throw new InvalidOperationException("Cannot draw button with uninitialized position.");
 
-            else if (Position is ProportionalRectangle p && Enabled && Spot.HasEgg())
+            else if (Position is RelativePosition p && Enabled && Spot.HasEgg())
                 g.DrawImage(Icon, p.GetAbsolute(width, height));
         }
 
@@ -296,7 +296,7 @@ namespace FarmerGraphics
             ToolMenu = toolMenu;
         }
 
-        public ToolExitButton(MenuHandler toolMenu, Bitmap icon, ProportionalRectangle position) : base(icon, position)
+        public ToolExitButton(MenuHandler toolMenu, Bitmap icon, RelativePosition position) : base(icon, position)
         {
             ToolMenu = toolMenu;
         }
@@ -322,7 +322,7 @@ namespace FarmerGraphics
             Menu = menu;
         }
 
-        public MenuExitButton(MenuHandler menu, Bitmap icon, ProportionalRectangle position) : base(icon, position)
+        public MenuExitButton(MenuHandler menu, Bitmap icon, RelativePosition position) : base(icon, position)
         {
             Menu = menu;
         }

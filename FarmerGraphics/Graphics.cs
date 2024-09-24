@@ -2,14 +2,14 @@
 
 namespace FarmerGraphics
 {
-    public struct ProportionalRectangle
+    public struct RelativePosition
     {
         public double X1 { get; init; }
         public double X2 { get; init; }
         public double Y1 { get; init; }
         public double Y2 { get; init; }
 
-        public ProportionalRectangle(double X1, double X2, double Y1, double Y2)
+        public RelativePosition(double X1, double X2, double Y1, double Y2)
         {
             this.X1 = X1;
             this.X2 = X2;
@@ -66,8 +66,8 @@ namespace FarmerGraphics
             ChickShopScene.AddStock(new Chicken(), new Bitmap("Assets\\Chicken.png"));
             //ChickShopScene.AddStock(new Bag(), new Bitmap("Assets\\Bag.png"));
 
-            Money = new MoneyDisplay(new Bitmap("Assets\\Money.png"), new ProportionalRectangle(0.01, 0.14, 0.02, 0.13));
-            Stamina = new StaminaDisplay(new ProportionalRectangle(0.9, 0.98, 0.02, 0.15),
+            Money = new MoneyDisplay(new Bitmap("Assets\\Money.png"), new RelativePosition(0.01, 0.14, 0.02, 0.13));
+            Stamina = new StaminaDisplay(new RelativePosition(0.9, 0.98, 0.02, 0.15),
                                          new Bitmap("Assets\\Stamina-background.png"),
                                          new Bitmap("Assets\\Stamina-level.png"),
                                          new Bitmap("Assets\\Stamina-empty.png"),
@@ -201,7 +201,6 @@ namespace FarmerGraphics
 // Saving (+ better chicken and egg rendering)
 // melons (fix menu)
 // comments
-// clickable farms
 // Enumerable farms
 // Think about just having a list of bought stuff (not a dict)
 // Disable planting when tool active

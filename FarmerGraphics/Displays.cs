@@ -10,7 +10,7 @@ namespace FarmerGraphics
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class CursorHandler : IDrawable
     {
-        private ProportionalRectangle Position { get; set; } = new();
+        private RelativePosition Position { get; set; } = new();
         private ToolIconLoader? ToolAssets;
         private SellableLoader? SellAssets;
 
@@ -31,12 +31,12 @@ namespace FarmerGraphics
 
         public void UpdatePosition(double x, double y)
         {
-            Position = new ProportionalRectangle(x - CURSOR_WIDTH / 2, x + CURSOR_WIDTH / 2, y - CURSOR_HEIGHT / 2, y + CURSOR_HEIGHT / 2);
+            Position = new RelativePosition(x - CURSOR_WIDTH / 2, x + CURSOR_WIDTH / 2, y - CURSOR_HEIGHT / 2, y + CURSOR_HEIGHT / 2);
         }
     }
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-    public class StaminaDisplay(ProportionalRectangle position, Bitmap background, Bitmap level, Bitmap empty, Bitmap top) : IDrawable
+    public class StaminaDisplay(RelativePosition position, Bitmap background, Bitmap level, Bitmap empty, Bitmap top) : IDrawable
     {
         public void Draw(Graphics g, GameState state, int width, int height)
         {
@@ -53,7 +53,7 @@ namespace FarmerGraphics
 
                 // Display at the bottom of stamina display
                 double top = position.Y1 + (position.Y2 - position.Y1) * (1 - state.Stamina);
-                ProportionalRectangle newPosition = new ProportionalRectangle(position.X1, position.X2, top, position.Y2);
+                RelativePosition newPosition = new RelativePosition(position.X1, position.X2, top, position.Y2);
                 using (Bitmap newLevel = level.Clone(CropArea, level.PixelFormat))
                     g.DrawImage(newLevel, newPosition.GetAbsolute(width, height));
             }
@@ -90,12 +90,12 @@ namespace FarmerGraphics
     public class ChallengeBoard : IDrawable
     {
         private Bitmap Background, ChallengeBackground;
-        private ProportionalRectangle Position;
+        private RelativePosition Position;
         private List<ChallengeDisplay> Displays = new();
         private double Padding;
         private int ToDisplay;
 
-        public ChallengeBoard(Bitmap background, Bitmap challengeBackground, ProportionalRectangle position, int toDisplay, double padding)
+        public ChallengeBoard(Bitmap background, Bitmap challengeBackground, RelativePosition position, int toDisplay, double padding)
         {
             Background = background;
             ChallengeBackground = challengeBackground;
@@ -117,7 +117,7 @@ namespace FarmerGraphics
                 if (displayed >= ToDisplay)
                     break;
 
-                var p = new ProportionalRectangle(Position.X1 + Padding, Position.X2 - Padding, lastY, lastY + width);
+                var p = new RelativePosition(Position.X1 + Padding, Position.X2 - Padding, lastY, lastY + width);
                 Displays.Add(new ChallengeDisplay(c, ChallengeBackground, p));
                 lastY = lastY + width + Padding;
 
