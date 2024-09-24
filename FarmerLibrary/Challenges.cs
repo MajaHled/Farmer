@@ -4,6 +4,9 @@
     {
         protected List<Challenge> Challenges = new List<Challenge>();
         public List<Challenge> GetChallengeList() => new List<Challenge>(Challenges);
+        // Number of active challenges.
+        // Challenges further down the list will be ignored for evaluation until space before them frees up
+        // If null, all challenges in the list are considered.
         protected int? ActiveNumber;
 
         public ChallengeHandler(int activeNumber)
@@ -57,13 +60,17 @@
                 c.LogDayEnd(state);
         }
 
+        // Should be overriden in subclasses to indicate whether creation of new challenges via NextChallenge() is possible
         protected virtual bool CanCreateNext => false;
 
+        // Should be overriden in subclasses to supply more challenges for ReplenishChallenges()
         protected virtual Challenge NextChallenge()
         {
             throw new InvalidOperationException("Can't create more Challenges.");
         }
 
+        // Generates new challenges to that there's at least ActiveNumber of them
+        // If ActiveNumber is null, this does nothing
         public void ReplenishChallenges()
         {
             if (ActiveNumber is int n)
