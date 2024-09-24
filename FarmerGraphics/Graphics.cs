@@ -198,9 +198,9 @@ namespace FarmerGraphics
 // Presentation
 // Testing
 // Saving
-// melons (fix menu)
 // comments
-// Enumerable farms
 // Think about just having a list of bought stuff (not a dict)
 // Buying feed etc.
 // Challenge lines, more chicken
+// Challenge comparator so that we can't get stuck looping the same Challenges
+// Maybe move higlight out of gamestate and make it just graphics based

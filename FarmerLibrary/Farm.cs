@@ -1,7 +1,9 @@
 ﻿
+using System.Collections;
+
 namespace FarmerLibrary
 {
-    public sealed class Farm : GameObject
+    public sealed class Farm : GameObject, IEnumerable<Plot>
     {
         public uint Rows { get; }
         public uint Cols { get; }
@@ -9,7 +11,6 @@ namespace FarmerLibrary
         private Plot[,] Plots;
 
         public Plot? Highlighted { get; private set; }
-
 
         public Farm(uint rows, uint cols)
         {
@@ -26,15 +27,36 @@ namespace FarmerLibrary
             Highlighted = null;
         }
 
-        public Plot this[int x, int y]
+        // Indexers and Enumerators
+        public Plot this[int x, int y] => Plots[x, y];
+
+        public Plot this[int i] => Plots[i / Cols, i % Cols];
+
+        private class FarmEnumerator : IEnumerator<Plot>
         {
-            get => Plots[x, y];
+            private readonly Farm _instance;
+            public FarmEnumerator(Farm farm) => _instance = farm;
+            int position = -1;
+
+            public Plot Current => _instance[position];
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+
+            public bool MoveNext()
+            {
+                position++;
+                return (position < _instance.Plots.Length);
+            }
+
+            public void Reset() => position = -1;
         }
 
-        public Plot this[int i]
-        {
-            get => Plots[i / Cols, i % Cols];
-        }
+        public IEnumerator<Plot> GetEnumerator() => new FarmEnumerator(this);
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
 
         public bool Planted
         {
@@ -52,16 +74,9 @@ namespace FarmerLibrary
             }
         }
 
-        public void Highlight(int i, int j)
-        {
-            Highlighted = Plots[i, j];
-        }
+        public void Highlight(int i, int j) => Highlighted = Plots[i, j];
 
-        public void Unhighlight()
-        {
-            Highlighted = null;
-        }
-
+        public void Unhighlight() => Highlighted = null;
 
         public bool PlantASeed(Seed seed)
         {
@@ -89,7 +104,6 @@ namespace FarmerLibrary
                 plot.EndDay();
             }
         }
-
     }
 
     public enum GrowthState { Seed, SmallSeedling, BigSeedling, Adult, Fruiting }

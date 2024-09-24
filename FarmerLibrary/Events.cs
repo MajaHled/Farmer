@@ -50,25 +50,22 @@
         protected override void StartEvent(GameState state)
         {
             foreach (Farm farm in state.GetFarmList())
-                for (int i = 0; i < farm.Rows * farm.Cols; i++)
-                    farm[i].Water();
+                foreach (Plot plot in farm)
+                    plot.Water();
         }
     }
 
     public sealed class WormEvent : DayEvent
     {
         double WormChance;
-        public WormEvent(double occuracneChance, double wormChance) : base(occuracneChance)
-        {
-            WormChance = wormChance;
-        }
+        public WormEvent(double occuracneChance, double wormChance) : base(occuracneChance) => WormChance = wormChance;
 
         protected override void StartEvent(GameState state)
         {
             foreach (Farm farm in state.GetFarmList())
-                for (int i = 0; i < farm.Rows * farm.Cols; i++)
+                foreach (Plot plot in farm)
                     if (rnd.NextDouble() < WormChance)
-                        farm[i].GiveBug();
+                        plot.GiveBug();
         }
     }
 
