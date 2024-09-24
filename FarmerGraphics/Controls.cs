@@ -166,25 +166,19 @@ namespace FarmerGraphics
     public class FarmDisplay : IClickable
     {
         private ProportionalRectangle[,] PlotCoords;
-        private NamedAssetsLoader NamedAssets = new();
+        private PlotStatesLoader PlotStates; 
         private PlantStatesLoader PlantStates;
+        private Bitmap Worm, Dead;
 
-        public FarmDisplay(PlantStatesLoader plantStates, ProportionalRectangle[,] plotCoords)
+        public FarmDisplay(PlantStatesLoader plantStates, PlotStatesLoader plotStates, Bitmap worm, Bitmap dead, ProportionalRectangle[,] plotCoords)
         {
             Enabled = true;
             PlantStates = plantStates;
+            PlotStates = plotStates;
 
-            // Named assets
-            NamedAssets.Load("Worm", "Assets\\Worm.png");
-            NamedAssets.Load("Dead", "Assets\\Dead.png");
+            Worm = worm;
+            Dead = dead;
 
-            NamedAssets.Load("Plot-watered", "Assets\\Plot-watered-center.png");
-            NamedAssets.Load("Plot-highlighted", "Assets\\Plot-highlighted-center.png");
-            NamedAssets.Load("Plot-both", "Assets\\Plot-both.png");
-            NamedAssets.Load("Plots-default", "Assets\\Plots-default.png");
-
-
-            // Initialize plots:
             PlotCoords = plotCoords;
         }
 
@@ -233,7 +227,7 @@ namespace FarmerGraphics
 
         public void Draw(Graphics g, GameState state, int width, int height)
         {
-            g.DrawImage(NamedAssets["Plots-default"], 0, 0, width, height);
+            g.DrawImage(PlotStates.Default, 0, 0, width, height);
 
             for (int i = 0; i < state.CurrentFarm.Rows; i++)
             {
@@ -246,15 +240,15 @@ namespace FarmerGraphics
                     // Draw plot highlights and watered color
                     if (watered && highlighted)
                     {
-                        g.DrawImage(NamedAssets["Plot-both"], position);
+                        g.DrawImage(PlotStates.Both, position);
                     }
                     else if (watered)
                     {
-                        g.DrawImage(NamedAssets["Plot-watered"], position);
+                        g.DrawImage(PlotStates.Watered, position);
                     }
                     else if (highlighted)
                     {
-                        g.DrawImage(NamedAssets["Plot-highlighted"], position);
+                        g.DrawImage(PlotStates.Highlighted, position);
                     }
 
                     Type? plantType = state.CurrentFarm[i, j].PlantType;
@@ -269,12 +263,12 @@ namespace FarmerGraphics
                             g.DrawImage(PlantStates.GetImage(t, s), position);
                             if (state.CurrentFarm[i, j].HasBug)
                             {
-                                g.DrawImage(NamedAssets["Worm"], position);
+                                g.DrawImage(Worm, position);
                             }
                         }
                         else
                         {
-                            g.DrawImage(NamedAssets["Dead"], position);
+                            g.DrawImage(Dead, position);
                         }
                     }
                 }

@@ -138,6 +138,7 @@ namespace FarmerGraphics
         // Loaders
         private ToolIconLoader ToolIconLoader = new();
         private PlantStatesLoader PlantAssets = new();
+        private PlotStatesLoader PlotAssets;
         private SellableLoader FruitAssets = new();
 
         // Menus
@@ -210,6 +211,14 @@ namespace FarmerGraphics
                 "Assets\\Fruiting-melon.png"
             );
 
+            // Plot assets
+            PlotAssets = new PlotStatesLoader(new Bitmap("Assets\\Plots-default.png"),
+                                              new Bitmap("Assets\\Plot-watered-center.png"),
+                                              new Bitmap("Assets\\Plot-highlighted-center.png"),
+                                              new Bitmap("Assets\\Plot-both.png"));
+
+            // Named assets
+
             // Initialize cursor handler with icons
             Cursor.SetToolIcons(ToolIconLoader);
             Cursor.SetSellableIcons(FruitAssets);
@@ -252,7 +261,7 @@ namespace FarmerGraphics
 
             // Initialize farm plots:
             var plotCoords = new ProportionalRectangle[3, 4];
-            double[] XBounds = [0.21, 0.395, 0.585, 0.773, 0.96];
+            double[] XBounds = [0.209, 0.395, 0.585, 0.773, 0.96];
             double[] YBounds = [0.07, 0.315, 0.57, 0.81];
             for (int i = 0; i < plotCoords.GetLength(0); i++)
             {
@@ -262,7 +271,7 @@ namespace FarmerGraphics
                 }
             }
 
-            Farm = new FarmDisplay(PlantAssets, plotCoords);
+            Farm = new FarmDisplay(PlantAssets, PlotAssets, new Bitmap("Assets\\Worm.png"), new Bitmap("Assets\\Dead.png"), plotCoords);
 
             // Handle enable/disable
             PlantMenuButton.ToDisable.Add(Farm);

@@ -113,7 +113,7 @@
             {
                 case 0:
                     if (MoneyIndex < MoneyValues.Count)
-                        result = new MoneyChallenge(MoneyValues[MoneyIndex], MoneyIndex);
+                        result = new MoneyChallenge(MoneyValues[MoneyIndex], MoneyIndex + 1);
                     else
                     {
                         int value = MoneyValues[MoneyValues.Count - 1] * (MoneyIndex - MoneyValues.Count + 1);

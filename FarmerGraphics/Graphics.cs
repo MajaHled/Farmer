@@ -201,5 +201,7 @@ namespace FarmerGraphics
 // Saving (+ better chicken and egg rendering)
 // melons (fix menu)
 // comments
-// clickable
+// clickable farms
 // Enumerable farms
+// Think about just having a list of bought stuff (not a dict)
+// Disable planting when tool active
