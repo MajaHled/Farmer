@@ -209,8 +209,6 @@ namespace FarmerGraphics
                                               new Bitmap("Assets\\Plot-highlighted-center.png"),
                                               new Bitmap("Assets\\Plot-both.png"));
 
-            // Named assets
-
             // Initialize cursor handler with icons
             Cursor.SetToolIcons(ToolIconLoader);
             Cursor.SetSellableIcons(FruitAssets);
@@ -277,7 +275,9 @@ namespace FarmerGraphics
             PlantMenuExitButton.ToEnable.Add(BackButton);
 
             ToolExitButton.ToEnable.Add(BackButton);
+            ToolExitButton.ToEnable.Add(PlantMenuButton);
             ToolMenu.AddToDisable(BackButton);
+            ToolMenu.AddToDisable(PlantMenuButton);
 
             HarvestButton.ToEnable.Add(ToolMenu);
             HarvestButton.ToEnable.Add(BackButton);
@@ -297,7 +297,7 @@ namespace FarmerGraphics
         public override void Draw(Graphics g, GameState state, int absoluteWidth, int absoluteHeight)
         {
             // Handle control visibility
-            if (!state.CurrentFarm.Planted)
+            if (!state.CurrentFarm.Planted && state.CurrentTool is null)
                 PlantMenuButton.Enable();
             else
             {

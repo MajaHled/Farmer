@@ -195,7 +195,6 @@ namespace FarmerGraphics
 }
 
 // TODO plan:
-// housekeeping (TODOs)
 // Presentation
 // Testing
 // Saving
@@ -203,6 +202,5 @@ namespace FarmerGraphics
 // comments
 // Enumerable farms
 // Think about just having a list of bought stuff (not a dict)
-// Disable planting when tool active
 // Buying feed etc.
 // Challenge lines, more chicken
