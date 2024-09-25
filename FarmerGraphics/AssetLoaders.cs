@@ -2,29 +2,6 @@
 
 namespace FarmerGraphics
 {
-    /*[System.Runtime.Versioning.SupportedOSPlatform("windows")] //Windows only due to Bitmap
-    public class NamedAssetsLoader
-    {
-        private Dictionary<string, Bitmap> LoadedAssets = [];
-
-        public void Load(string name, string path)
-        {
-            var image = new Bitmap(path);
-            LoadedAssets.Add(name, image);
-        }
-
-        public Bitmap this[string index]
-        {
-            get
-            {
-                if (LoadedAssets.ContainsKey(index))
-                    return LoadedAssets[index];
-                else
-                    throw new ArgumentException($"Asset '{index}' not loaded.");
-            }
-        }
-    }*/
-
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public class PlotStatesLoader(Bitmap def, Bitmap watered, Bitmap highlighted, Bitmap both)
     {

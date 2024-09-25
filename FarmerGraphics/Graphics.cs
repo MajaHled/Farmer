@@ -193,16 +193,3 @@ namespace FarmerGraphics
         }
     }
 }
-
-// TODO plan:
-// Presentation
-// Testing
-// Saving
-// comments
-// more plants
-
-// Buying feed etc.
-// Challenge lines, more chicken
-// Challenge comparator so that we can't get stuck looping the same Challenges
-// Maybe move higlight out of gamestate and make it just graphics based
-// Also mabybe move the stuff thats just there for graphics to like a graphics settings thing or something
